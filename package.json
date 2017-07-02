@@ -7,5 +7,15 @@
     "test": "node test/main.js"
   },
   "author": "ZECTBynmo (michael.vegeto@gmail.com)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.80.0",
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "level": "^1.7.0",
+    "query-string": "^4.3.4"
+  },
+  "devDependencies": {
+    "tape": "^4.7.0"
+  }
 }
