@@ -1,0 +1,11 @@
+{
+  "name": "stackdown",
+  "version": "0.0.0",
+  "description": "Cloud stack simulator using node.js and leveldb",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/main.js"
+  },
+  "author": "ZECTBynmo (michael.vegeto@gmail.com)",
+  "license": "MIT"
+}
