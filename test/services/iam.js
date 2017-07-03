@@ -10,9 +10,9 @@ const getIAM = function(endpoints) {
   })
 }
 
-test('iam', (test) => {
+test('IAM', (test) => {
   utils.setup([IAMService], function(err, endpoints, services) {
-    const iam = getIAM(endpoints)
+    const iam = utils.getInstance(endpoints, 'IAM')
 
     iam.getUser({}, function(err, results) {
       test.equal(err, null, 'should not emit an error')
