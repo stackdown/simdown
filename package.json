@@ -12,8 +12,10 @@
     "aws-sdk": "^2.80.0",
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
+    "extend": "^3.0.1",
     "level": "^1.7.0",
-    "query-string": "^4.3.4"
+    "query-string": "^4.3.4",
+    "rimraf": "^2.6.1"
   },
   "devDependencies": {
     "tape": "^4.7.0"

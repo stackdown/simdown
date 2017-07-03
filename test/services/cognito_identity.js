@@ -20,3 +20,33 @@ test('CognitoIdentity createIdentityPool', (test) => {
     })
   })
 })
+
+test('CognitoIdentity listIdentityPools', (test) => {
+  utils.setup([CognitoIdentityService], function(err, endpoints, services) {
+    const cognito = utils.getInstance(endpoints, 'CognitoIdentity')
+
+    const params = {
+      AllowUnauthenticatedIdentities: true,
+      IdentityPoolName: 'test-pool'
+    }
+
+    cognito.createIdentityPool(params, function(err, results) {
+      const params = {
+        MaxResults: 0
+      }
+
+      cognito.listIdentityPools(params, function(err, results) {
+
+        test.equal(err, null, 'should not emit an error')
+        test.equal(results.IdentityPools.length, 1, 'should have one identity pool')
+        
+        for (var pool of results.IdentityPools) {
+          test.notEqual(pool.IdentityPoolId, undefined, 'should retrieve pool ids')
+          test.equal(pool.IdentityPoolName, 'test-pool', 'should retrieve pool names')
+        }
+
+        utils.cleanup(test, services)
+      })
+    })
+  })
+})

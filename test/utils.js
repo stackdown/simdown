@@ -8,7 +8,9 @@ exports.cleanup = function(test, services) {
       next()
     })
   }, function(err) {
-    test.end()
+    dbutil.cleanup(function() {
+      test.end()
+    })
   })
 }
 
