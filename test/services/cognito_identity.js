@@ -35,6 +35,16 @@ function deletePool(cognito, poolId, callback) {
   })
 }
 
+function getPool(cognito, poolId, callback) {
+  const params = {
+    IdentityPoolId: poolId
+  }
+
+  cognito.describeIdentityPool(params, function(err, results) {
+    callback(err, results)
+  })
+}
+
 test('CognitoIdentity createIdentityPool', (test) => {
   utils.setup([CognitoIdentityService], function(err, endpoints, services) {
     const cognito = utils.getInstance(endpoints, 'CognitoIdentity')
@@ -44,6 +54,28 @@ test('CognitoIdentity createIdentityPool', (test) => {
       test.notEqual(results.IdentityPoolId, undefined, 'should generate an IdentityPoolId')
       test.equal(results.IdentityPoolName, 'test-pool', 'should send back the right pool name')
       utils.cleanup(test, services)
+    })
+  })
+})
+
+test('CognitoIdentity updateIdentityPool', (test) => {
+  utils.setup([CognitoIdentityService], function(err, endpoints, services) {
+    const cognito = utils.getInstance(endpoints, 'CognitoIdentity')
+
+    createPool(cognito, function(err, results) {
+      const params = {
+        IdentityPoolId: results.IdentityPoolId,
+        IdentityPoolName: 'test-pool',
+        AllowUnauthenticatedIdentities: false
+      }
+
+      cognito.updateIdentityPool(params, function(err, results) {
+        getPool(cognito, params.IdentityPoolId, function(err, results) {
+          test.equal(err, null, 'should not emit an error')
+          test.equal(results.AllowUnauthenticatedIdentities, false, 'should have updated params')
+          utils.cleanup(test, services)
+        })
+      })
     })
   })
 })
@@ -104,11 +136,8 @@ test('CognitoIdentity describeIdentityPool', (test) => {
     const cognito = utils.getInstance(endpoints, 'CognitoIdentity')
 
     createPool(cognito, function(err, results) {
-      const params = {
-        IdentityPoolId: results.IdentityPoolId
-      }
-
-      cognito.describeIdentityPool(params, function(err, results) {
+      
+      getPool(cognito, results.IdentityPoolId, function(err, results) {
         test.equal(err, null, 'should not emit an error')
         test.notEqual(results.IdentityPoolId, undefined, 'should retrieve the IdentityPoolId')
         test.equal(results.IdentityPoolName, 'test-pool', 'should retrieve the pool name')
