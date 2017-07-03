@@ -1,7 +1,7 @@
-var AWS = require('aws-sdk')
-var test = require('tape')
-var utils = require('../utils')
-var IAMService = require('../../lib/services/iam')
+const AWS = require('aws-sdk')
+const test = require('tape')
+const utils = require('../utils')
+const IAMService = require('../../lib/services/iam')
 
 const getIAM = function(endpoints) {
   return new AWS.IAM({
