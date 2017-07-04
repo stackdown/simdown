@@ -58,8 +58,8 @@ function updatePool(cognito, poolId, callback) {
   })
 }
 
-const testOpts = {
-  only: 'remove',
+const identityPoolTestOpts = {
+  // only: 'list',
   crud: {
     get: getPool,
     list: listPools,
@@ -72,11 +72,10 @@ const testOpts = {
     ['AllowUnauthenticatedIdentities']
   ],
   schema: {
-    id: 'IdentityPoolId',
-    name: 'IdentityPoolName'
+    id: ['IdentityPoolId'],
   },
   Services: [CognitoIdentityService],
   namespace: ['CognitoIdentity', 'identityPool']
 }
 
-utils.testCrud(test, testOpts)
+utils.testCrud(test, identityPoolTestOpts)
