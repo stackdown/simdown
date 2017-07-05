@@ -10,7 +10,7 @@ function createPool(cognito, callback) {
     IdentityPoolName: 'test-pool'
   }
 
-  cognito.createIdentityPool(params, function(err, results) {
+  cognito.createIdentityPool(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -20,7 +20,7 @@ function listPools(cognito, context, callback) {
     MaxResults: 0
   }
 
-  cognito.listIdentityPools(params, function(err, results) {
+  cognito.listIdentityPools(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -30,7 +30,7 @@ function deletePool(cognito, poolId, context, callback) {
     IdentityPoolId: poolId
   }
 
-  cognito.deleteIdentityPool(params, function(err, results) {
+  cognito.deleteIdentityPool(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -40,7 +40,7 @@ function getPool(cognito, poolId, context, callback) {
     IdentityPoolId: poolId
   }
 
-  cognito.describeIdentityPool(params, function(err, results) {
+  cognito.describeIdentityPool(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -53,7 +53,7 @@ function updatePool(cognito, poolId, context, callback) {
     AllowUnauthenticatedIdentities: false
   }
 
-  cognito.updateIdentityPool(params, function(err, results) {
+  cognito.updateIdentityPool(params, (err, results) => {
     callback(err, results)
   })
 }

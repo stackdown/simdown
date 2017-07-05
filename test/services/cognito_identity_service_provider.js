@@ -10,7 +10,7 @@ function createUserPool(provider, callback) {
     EmailVerificationMessage: 'original email message'
   }
 
-  provider.createUserPool(params, function(err, results) {
+  provider.createUserPool(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -21,7 +21,7 @@ function updateUserPool(cognito, poolId, context, callback) {
     EmailVerificationMessage: 'changed email message'
   }
 
-  cognito.updateUserPool(params, function(err, results) {
+  cognito.updateUserPool(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -31,7 +31,7 @@ function listUserPools(cognito, context, callback) {
     MaxResults: 0
   }
 
-  cognito.listUserPools(params, function(err, results) {
+  cognito.listUserPools(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -41,7 +41,7 @@ function deleteUserPool(cognito, poolId, context, callback) {
     UserPoolId: poolId
   }
 
-  cognito.deleteUserPool(params, function(err, results) {
+  cognito.deleteUserPool(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -51,19 +51,19 @@ function getUserPool(provider, poolId, context, callback) {
     UserPoolId: poolId
   }
 
-  provider.describeUserPool(params, function(err, results) {
+  provider.describeUserPool(params, (err, results) => {
     callback(err, results)
   })
 }
 
 function createUserPoolClient(provider, callback) {
-  createUserPool(provider, function(err, poolResults) {
+  createUserPool(provider, (err, poolResults) => {
     const params = {
       ClientName: 'test-user-pool-client',
       UserPoolId: poolResults.UserPool.Id,
     }
 
-    provider.createUserPoolClient(params, function(err, results) {
+    provider.createUserPoolClient(params, (err, results) => {
       callback(err, results, {pool: poolResults.UserPool.Id})
     })
   })
@@ -76,7 +76,7 @@ function updateUserPoolClient(cognito, poolId, context, callback) {
     ClientName: 'test-user-pool-client-updated',
   }
 
-  cognito.updateUserPoolClient(params, function(err, results) {
+  cognito.updateUserPoolClient(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -87,7 +87,7 @@ function listUserPoolClients(cognito, context, callback) {
     UserPoolId: context.pool,
   }
 
-  cognito.listUserPoolClients(params, function(err, results) {
+  cognito.listUserPoolClients(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -98,7 +98,7 @@ function deleteUserPoolClient(cognito, clientId, context, callback) {
     UserPoolId: context.pool,
   }
 
-  cognito.deleteUserPoolClient(params, function(err, results) {
+  cognito.deleteUserPoolClient(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -109,7 +109,7 @@ function getUserPoolClient(provider, clientId, context, callback) {
     UserPoolId: context.pool,
   }
 
-  provider.describeUserPoolClient(params, function(err, results) {
+  provider.describeUserPoolClient(params, (err, results) => {
     callback(err, results)
   })
 }
@@ -128,7 +128,7 @@ utils.testCrud(test, {
     ['UserPool', 'EmailVerificationMessage']
   ],
   schema: {
-    id: function(data) {return data.UserPool ? data.UserPool.Id : data.Id}
+    id: (data) => {return data.UserPool ? data.UserPool.Id : data.Id}
     // id: ['UserPool', 'Id'],
   },
   Services: [CognitoIdentityServiceProvider],
@@ -149,7 +149,7 @@ utils.testCrud(test, {
     ['UserPoolClient', 'ClientName']
   ],
   schema: {
-    id: function(data) {return data.UserPoolClient ? data.UserPoolClient.ClientId : data.ClientId}
+    id: (data) => {return data.UserPoolClient ? data.UserPoolClient.ClientId : data.ClientId}
   },
   Services: [CognitoIdentityServiceProvider],
   namespace: ['CognitoIdentityServiceProvider', 'userPoolClient']
