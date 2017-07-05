@@ -15,7 +15,7 @@ function createPool(cognito, callback) {
   })
 }
 
-function listPools(cognito, callback) {
+function listPools(cognito, context, callback) {
   const params = {
     MaxResults: 0
   }
@@ -25,7 +25,7 @@ function listPools(cognito, callback) {
   })
 }
 
-function deletePool(cognito, poolId, callback) {
+function deletePool(cognito, poolId, context, callback) {
   const params = {
     IdentityPoolId: poolId
   }
@@ -35,7 +35,7 @@ function deletePool(cognito, poolId, callback) {
   })
 }
 
-function getPool(cognito, poolId, callback) {
+function getPool(cognito, poolId, context, callback) {
   const params = {
     IdentityPoolId: poolId
   }
@@ -45,7 +45,7 @@ function getPool(cognito, poolId, callback) {
   })
 }
 
-function updatePool(cognito, poolId, callback) {
+function updatePool(cognito, poolId, context, callback) {
   // Change to no longer allow authenticated identities
   const params = {
     IdentityPoolId: poolId,

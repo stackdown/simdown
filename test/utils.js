@@ -75,10 +75,10 @@ exports.testCreateItem = function(test, opts) {
     exports.setup(opts.Services, function(err, endpoints, services) {
       const service = exports.getInstance(endpoints, opts.namespace[0])
 
-      opts.crud.create(service, function(err, results) {
+      opts.crud.create(service, function(err, created) {
         test.equal(err, null, 'should not emit an error')
         
-        const resourceId = getDeepVal(results, opts.schema.id)
+        const resourceId = getDeepVal(created, opts.schema.id)
         test.notEqual(resourceId, undefined, `should generate an id at ${opts.schema.id}`)
         
         exports.cleanup(test, services)
@@ -96,11 +96,11 @@ exports.testUpdateItem = function(test, opts) {
     exports.setup(opts.Services, function(err, endpoints, services) {
       const service = exports.getInstance(endpoints, opts.namespace[0])
 
-      opts.crud.create(service, function(err, created) {
+      opts.crud.create(service, function(err, created, context) {
         const resourceId = getDeepVal(created, opts.schema.id)
-        opts.crud.update(service, resourceId, function(err, updated) {
+        opts.crud.update(service, resourceId, context, function(err, updated) {
 
-          opts.crud.get(service, resourceId, function(err, found) {
+          opts.crud.get(service, resourceId, context, function(err, found) {
             test.equal(err, null, 'should not emit an error')
 
             for (var path of opts.updatePaths) {
@@ -126,8 +126,8 @@ exports.testListItems = function(test, opts) {
     exports.setup(opts.Services, function(err, endpoints, services) {
       const service = exports.getInstance(endpoints, opts.namespace[0])
 
-      opts.crud.create(service, function(err, results) {
-        opts.crud.list(service, function(err, results) {
+      opts.crud.create(service, function(err, created, context) {
+        opts.crud.list(service, context, function(err, results) {
           test.equal(err, null, 'should not emit an error')
           
           test.equal(results[opts.listPath].length, 1, 'should have one identity pool')
@@ -156,22 +156,26 @@ exports.testRemoveItem = function(test, opts) {
 
       async.waterfall([
         function(done) {
-          opts.crud.create(service, done)
+          opts.crud.create(service, function(err, results, context) {
+            done(err, results, context)
+          })
         },
         
-        function(results, done) {
-          opts.crud.list(service, done)
+        function(results, context, done) {
+          opts.crud.list(service, context, function(err, results) {
+            done(err, results, context)
+          })
         },
         
-        function(results, done) {
+        function(results, context, done) {
           const startPools = results[opts.listPath]
           
           test.equal(startPools.length, 1, 'should start with one pool')
 
           const poolId = getDeepVal(startPools[0], opts.schema.id)
 
-          opts.crud.remove(service, poolId, function(err) {
-            opts.crud.list(service, function(err, results) {
+          opts.crud.remove(service, poolId, context, function(err) {
+            opts.crud.list(service, context, function(err, results) {
               const endPools = results[opts.listPath]
               done(err, startPools, endPools)
             })
@@ -194,13 +198,13 @@ exports.testGetItem = function(test, opts) {
   testFn(name, (test) => {
     exports.setup(opts.Services, function(err, endpoints, services) {
       const service = exports.getInstance(endpoints, opts.namespace[0])
-      opts.crud.create(service, function(err, created) {
+      opts.crud.create(service, function(err, created, context) {
         const createdId = getDeepVal(created, opts.schema.id)
-        opts.crud.get(service, createdId, function(err, results) {
+        opts.crud.get(service, createdId, context, function(err, results) {
           test.equal(err, null, 'should not emit an error')
           
           const foundId = getDeepVal(results, opts.schema.id)
-          
+
           test.equal(foundId, createdId, 'should retrieve an item with the same id we created')
           exports.cleanup(test, services)
         })

@@ -15,7 +15,7 @@ function createUserPool(provider, callback) {
   })
 }
 
-function updateUserPool(cognito, poolId, callback) {
+function updateUserPool(cognito, poolId, context, callback) {
   const params = {
     UserPoolId: poolId,
     EmailVerificationMessage: 'changed email message'
@@ -26,7 +26,7 @@ function updateUserPool(cognito, poolId, callback) {
   })
 }
 
-function listUserPools(cognito, callback) {
+function listUserPools(cognito, context, callback) {
   const params = {
     MaxResults: 0
   }
@@ -36,7 +36,7 @@ function listUserPools(cognito, callback) {
   })
 }
 
-function deleteUserPool(cognito, poolId, callback) {
+function deleteUserPool(cognito, poolId, context, callback) {
   const params = {
     UserPoolId: poolId
   }
@@ -46,7 +46,7 @@ function deleteUserPool(cognito, poolId, callback) {
   })
 }
 
-function getUserPool(provider, poolId, callback) {
+function getUserPool(provider, poolId, context, callback) {
   const params = {
     UserPoolId: poolId
   }
@@ -75,6 +75,60 @@ const userPoolTestOpts = {
   },
   Services: [CognitoIdentityServiceProvider],
   namespace: ['CognitoIdentityServiceProvider', 'userPool']
+}
+
+function createUserPoolClient(provider, callback) {
+  createUserPool(provider, function(err, results) {
+    const params = {
+      ClientName: 'test-user-pool-client',
+      UserPoolId: results.UserPool.Id,
+    }
+
+    provider.createUserPoolClient(params, function(err, results) {
+      callback(err, results)
+    })
+  })
+}
+
+function updateUserPoolClient(cognito, poolId, context, callback) {
+  const params = {
+    UserPoolId: poolId,
+    EmailVerificationMessage: 'changed email message'
+  }
+
+  cognito.updateUserPoolClient(params, function(err, results) {
+    callback(err, results)
+  })
+}
+
+function listUserPoolClients(cognito, context, callback) {
+  const params = {
+    MaxResults: 0
+  }
+
+  cognito.listUserPoolClients(params, function(err, results) {
+    callback(err, results)
+  })
+}
+
+function deleteUserPoolClient(cognito, poolId, context, callback) {
+  const params = {
+    UserPoolId: poolId
+  }
+
+  cognito.deleteUserPoolClient(params, function(err, results) {
+    callback(err, results)
+  })
+}
+
+function getUserPoolClient(provider, poolId, context, callback) {
+  const params = {
+    UserPoolId: poolId
+  }
+
+  provider.describeUserPoolClient(params, function(err, results) {
+    callback(err, results)
+  })
 }
 
 utils.testCrud(test, userPoolTestOpts)
