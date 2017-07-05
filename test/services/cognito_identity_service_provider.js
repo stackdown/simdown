@@ -78,16 +78,3 @@ const userPoolTestOpts = {
 }
 
 utils.testCrud(test, userPoolTestOpts)
-
-// test('CognitoIdentityServiceProvider createIdentityPool', (test) => {
-//   utils.setup([CognitoIdentityServiceProvider], function(err, endpoints, services) {
-//     const provider = utils.getInstance(endpoints, 'CognitoIdentityServiceProvider')
-
-//     createUserPool(provider, function(err, results) {
-//       test.equal(err, null, 'should not emit an error')
-//       test.notEqual(results.UserPool.Id, undefined, 'should generate an id')
-//       test.equal(results.UserPool.Name, 'test-user-pool', 'should send back the right pool name')
-//       utils.cleanup(test, services)
-//     })
-//   })
-// })
