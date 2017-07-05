@@ -4,124 +4,45 @@ const async = require('async')
 const utils = require('../utils')
 const CognitoIdentityServiceProvider = require('../../lib/services/cognito_identity_service_provider')
 
-function createUserPool(provider, callback) {
-  const params = {
-    PoolName: 'test-user-pool',
-    EmailVerificationMessage: 'original email message'
-  }
+const userPoolConfig = utils.testCrud(test, {
+  // only: 'remove',
+  methods: {
+    get: (makeCall, id) => ({
+      params: {
+        UserPoolId: id
+      },
+      method: ['CognitoIdentityServiceProvider', 'describeUserPool']
+    }),
+    
+    create: (makeCall, id) => ({
+      params: {
+        PoolName: 'test-user-pool',
+        EmailVerificationMessage: 'original email message'
+      },
+      method: ['CognitoIdentityServiceProvider', 'createUserPool'],
+    }),
 
-  provider.createUserPool(params, (err, results) => {
-    callback(err, results)
-  })
-}
+    list: (makeCall, context) => ({
+      params: {
+        MaxResults: 0
+      },
+      method: ['CognitoIdentityServiceProvider', 'listUserPools']
+    }),
 
-function updateUserPool(cognito, poolId, context, callback) {
-  const params = {
-    UserPoolId: poolId,
-    EmailVerificationMessage: 'changed email message'
-  }
+    remove: (makeCall, id, context) => ({
+      params: {
+        UserPoolId: id
+      },
+      method: ['CognitoIdentityServiceProvider', 'deleteUserPool']
+    }),
 
-  cognito.updateUserPool(params, (err, results) => {
-    callback(err, results)
-  })
-}
-
-function listUserPools(cognito, context, callback) {
-  const params = {
-    MaxResults: 0
-  }
-
-  cognito.listUserPools(params, (err, results) => {
-    callback(err, results)
-  })
-}
-
-function deleteUserPool(cognito, poolId, context, callback) {
-  const params = {
-    UserPoolId: poolId
-  }
-
-  cognito.deleteUserPool(params, (err, results) => {
-    callback(err, results)
-  })
-}
-
-function getUserPool(provider, poolId, context, callback) {
-  const params = {
-    UserPoolId: poolId
-  }
-
-  provider.describeUserPool(params, (err, results) => {
-    callback(err, results)
-  })
-}
-
-function createUserPoolClient(provider, callback) {
-  createUserPool(provider, (err, poolResults) => {
-    const params = {
-      ClientName: 'test-user-pool-client',
-      UserPoolId: poolResults.UserPool.Id,
-    }
-
-    provider.createUserPoolClient(params, (err, results) => {
-      callback(err, results, {pool: poolResults.UserPool.Id})
-    })
-  })
-}
-
-function updateUserPoolClient(cognito, poolId, context, callback) {
-  const params = {
-    ClientId: poolId,
-    UserPoolId: context.pool,
-    ClientName: 'test-user-pool-client-updated',
-  }
-
-  cognito.updateUserPoolClient(params, (err, results) => {
-    callback(err, results)
-  })
-}
-
-function listUserPoolClients(cognito, context, callback) {
-  const params = {
-    MaxResults: 0,
-    UserPoolId: context.pool,
-  }
-
-  cognito.listUserPoolClients(params, (err, results) => {
-    callback(err, results)
-  })
-}
-
-function deleteUserPoolClient(cognito, clientId, context, callback) {
-  const params = {
-    ClientId: clientId,
-    UserPoolId: context.pool,
-  }
-
-  cognito.deleteUserPoolClient(params, (err, results) => {
-    callback(err, results)
-  })
-}
-
-function getUserPoolClient(provider, clientId, context, callback) {
-  const params = {
-    ClientId: clientId,
-    UserPoolId: context.pool,
-  }
-
-  provider.describeUserPoolClient(params, (err, results) => {
-    callback(err, results)
-  })
-}
-
-utils.testCrud(test, {
-  // only: 'list',
-  crud: {
-    get: getUserPool,
-    list: listUserPools,
-    create: createUserPool,
-    remove: deleteUserPool,
-    update: updateUserPool,
+    update: (makeCall, id, context) => ({
+      params: {
+        UserPoolId: id,
+        EmailVerificationMessage: 'changed email message'
+      },
+      method: ['CognitoIdentityServiceProvider', 'updateUserPool']
+    }),
   },
   listPath: 'UserPools',
   updatePaths: [
@@ -137,12 +58,55 @@ utils.testCrud(test, {
 
 utils.testCrud(test, {
   // only: 'remove',
-  crud: {
-    get: getUserPoolClient,
-    list: listUserPoolClients,
-    create: createUserPoolClient,
-    remove: deleteUserPoolClient,
-    update: updateUserPoolClient,
+  methods: {
+    get: (makeCall, id, context) => ({
+      params: {
+        ClientId: id,
+        UserPoolId: context.pool,
+      },
+      method: ['CognitoIdentityServiceProvider', 'describeUserPoolClient']
+    }),
+    
+    create: (makeCall) => ((callback) => {
+      const callConfig = userPoolConfig.methods.create(makeCall)
+
+      makeCall(callConfig.method, callConfig.params, null, (err, poolResults) => {
+        callback(err, {
+          params: {
+            ClientName: 'test-user-pool-client',
+            UserPoolId: poolResults ? poolResults.UserPool.Id : undefined,
+          },
+          method: ['CognitoIdentityServiceProvider', 'createUserPoolClient'],
+          context: (results) => ({pool: poolResults.UserPool.Id})
+        })
+      })
+    }),
+
+    list: (makeCall, context) => ({
+      params: {
+        MaxResults: 0,
+        UserPoolId: context.pool,
+      },
+      method: ['CognitoIdentityServiceProvider', 'listUserPoolClients']
+    }),
+
+    remove: (makeCall, id, context) => ({
+      params: {
+        ClientId: id,
+        UserPoolId: context.pool,
+      },
+      method: ['CognitoIdentityServiceProvider', 'deleteUserPoolClient']
+    }),
+
+    update: (makeCall, id, context) => ({
+      params: {
+        ClientId: id,
+        UserPoolId: context.pool,
+        ClientName: 'test-user-pool-client-updated',
+      },
+      method: ['CognitoIdentityServiceProvider', 'updateUserPoolClient']
+    }),
+
   },
   listPath: 'UserPoolClients',
   updatePaths: [

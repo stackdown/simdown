@@ -58,12 +58,55 @@ const getDeepVal = (obj, path) => {
   return retval
 }
 
+exports.crudMethod = (params, method) => {
+  return function() {
+
+  }
+}
+
 exports.testCrud = (test, opts) => {
+  opts.crud = {}
+
+  Object.keys(opts.methods).forEach((method, iMethod) => {
+    opts.crud[method] = function(makeCall) {
+      const config = opts.methods[method]
+      const params = config.apply(null, arguments)
+      if (params.constructor === Function) {
+        params((err, finalParams) => {
+          makeCall(finalParams.method, finalParams.params, finalParams.context, arguments[arguments.length-1])
+        })
+      } else {
+        makeCall(params.method, params.params, params.context, arguments[arguments.length-1])
+      }
+    }
+  })
+
   exports.testGetItem(test, opts)
   exports.testListItems(test, opts)
   exports.testCreateItem(test, opts)
   exports.testUpdateItem(test, opts)
   exports.testRemoveItem(test, opts)
+
+  return opts
+}
+
+exports.callCrud = (opts, type, endpoints, services, ...methodArgs) => {
+  const makeCall = (method, params, context, callback) => {
+    let [serviceName, functionName] = method
+
+    const service = exports.getInstance(endpoints, serviceName)
+    service[functionName](params, (err, results) => {
+      if (err) {
+        callback(err)
+      } else if (context) {
+        callback(null, results, context(results))
+      } else {
+        callback(null, results)
+      }
+    })
+  }
+
+  opts.crud[type].call(null, makeCall, ...methodArgs)
 }
 
 exports.testCreateItem = (test, opts) => {
@@ -73,9 +116,10 @@ exports.testCreateItem = (test, opts) => {
 
   testFn(name, (test) => {
     exports.setup(opts.Services, (err, endpoints, services) => {
-      const service = exports.getInstance(endpoints, opts.namespace[0])
+      opts.services = services
+      opts.endpoints = endpoints
 
-      opts.crud.create(service, (err, created) => {
+      exports.callCrud(opts, 'create', endpoints, services, (err, created) => {
         test.equal(err, null, 'should not emit an error')
         
         const resourceId = getDeepVal(created, opts.schema.id)
@@ -94,13 +138,11 @@ exports.testUpdateItem = (test, opts) => {
 
   testFn(name, (test) => {
     exports.setup(opts.Services, (err, endpoints, services) => {
-      const service = exports.getInstance(endpoints, opts.namespace[0])
-
-      opts.crud.create(service, (err, created, context) => {
+      exports.callCrud(opts, 'create', endpoints, services, (err, created, context) => {
         const resourceId = getDeepVal(created, opts.schema.id)
-        opts.crud.update(service, resourceId, context, (err, updated) => {
-
-          opts.crud.get(service, resourceId, context, (err, found) => {
+        
+        exports.callCrud(opts, 'update', endpoints, services, resourceId, context, (err, updated) => {
+          exports.callCrud(opts, 'get', endpoints, services, resourceId, context, (err, found) => {
             test.equal(err, null, 'should not emit an error')
 
             for (var path of opts.updatePaths) {
@@ -124,10 +166,8 @@ exports.testListItems = (test, opts) => {
 
   testFn(name, (test) => {
     exports.setup(opts.Services, (err, endpoints, services) => {
-      const service = exports.getInstance(endpoints, opts.namespace[0])
-
-      opts.crud.create(service, (err, created, context) => {
-        opts.crud.list(service, context, (err, results) => {
+      exports.callCrud(opts, 'create', endpoints, services, (err, created, context) => {
+        exports.callCrud(opts, 'list', endpoints, services, context, (err, results) => {
           test.equal(err, null, 'should not emit an error')
           
           test.equal(results[opts.listPath].length, 1, 'should have one identity pool')
@@ -152,17 +192,15 @@ exports.testRemoveItem = (test, opts) => {
 
   testFn(name, (test) => {
     exports.setup(opts.Services, (err, endpoints, services) => {
-      const service = exports.getInstance(endpoints, opts.namespace[0])
-
       async.waterfall([
         (done) => {
-          opts.crud.create(service, (err, results, context) => {
+          exports.callCrud(opts, 'create', endpoints, services, (err, results, context) => {
             done(err, results, context)
           })
         },
         
         (results, context, done) => {
-          opts.crud.list(service, context, (err, results) => {
+          exports.callCrud(opts, 'list', endpoints, services, context, (err, results) => {
             done(err, results, context)
           })
         },
@@ -174,8 +212,8 @@ exports.testRemoveItem = (test, opts) => {
 
           const poolId = getDeepVal(startPools[0], opts.schema.id)
 
-          opts.crud.remove(service, poolId, context, (err) => {
-            opts.crud.list(service, context, (err, results) => {
+          exports.callCrud(opts, 'remove', endpoints, services, poolId, context, (err, results) => {
+            exports.callCrud(opts, 'list', endpoints, services, context, (err, results) => {
               const endPools = results[opts.listPath]
               done(err, startPools, endPools)
             })
@@ -197,10 +235,10 @@ exports.testGetItem = (test, opts) => {
 
   testFn(name, (test) => {
     exports.setup(opts.Services, (err, endpoints, services) => {
-      const service = exports.getInstance(endpoints, opts.namespace[0])
-      opts.crud.create(service, (err, created, context) => {
+      exports.callCrud(opts, 'create', endpoints, services, (err, created, context) => {
         const createdId = getDeepVal(created, opts.schema.id)
-        opts.crud.get(service, createdId, context, (err, results) => {
+      
+        exports.callCrud(opts, 'get', endpoints, services, createdId, context, (err, results) => {
           test.equal(err, null, 'should not emit an error')
           
           const foundId = getDeepVal(results, opts.schema.id)
