@@ -194,13 +194,13 @@ exports.testGetItem = function(test, opts) {
   testFn(name, (test) => {
     exports.setup(opts.Services, function(err, endpoints, services) {
       const service = exports.getInstance(endpoints, opts.namespace[0])
-
       opts.crud.create(service, function(err, created) {
         const createdId = getDeepVal(created, opts.schema.id)
         opts.crud.get(service, createdId, function(err, results) {
           test.equal(err, null, 'should not emit an error')
           
           const foundId = getDeepVal(results, opts.schema.id)
+          
           test.equal(foundId, createdId, 'should retrieve an item with the same id we created')
           exports.cleanup(test, services)
         })
