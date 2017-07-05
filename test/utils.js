@@ -79,7 +79,7 @@ exports.testCreateItem = function(test, opts) {
         test.equal(err, null, 'should not emit an error')
         
         const resourceId = getDeepVal(created, opts.schema.id)
-        test.notEqual(resourceId, undefined, `should generate an id at ${opts.schema.id}`)
+        test.notEqual(resourceId, undefined, 'should generate an id')
         
         exports.cleanup(test, services)
       })
