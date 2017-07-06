@@ -16,7 +16,8 @@
     "extend": "^3.0.1",
     "level": "^1.7.0",
     "query-string": "^4.3.4",
-    "rimraf": "^2.6.1"
+    "rimraf": "^2.6.1",
+    "shortid": "^2.2.8"
   },
   "devDependencies": {
     "tape": "^4.7.0"
