@@ -50,7 +50,6 @@ const userPoolConfig = utils.testCrud(test, {
   ],
   schema: {
     id: (data) => {return data.UserPool ? data.UserPool.Id : data.Id}
-    // id: ['UserPool', 'Id'],
   },
   Services: [CognitoIdentityServiceProvider],
   namespace: ['CognitoIdentityServiceProvider', 'userPool']
