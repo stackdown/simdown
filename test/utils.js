@@ -1,6 +1,9 @@
 const AWS = require('aws-sdk')
 const async = require('async')
+const debug = require('debug')
 const dbutil = require('../lib/dbutil')
+
+log = debug(`stackdown:testutil`)
 
 exports.cleanup = (test, services) => {
   async.each(services, (service, next) => {
@@ -96,6 +99,8 @@ exports.callCrud = (opts, type, endpoints, services, ...methodArgs) => {
 
     const service = exports.getInstance(endpoints, serviceName)
     service[functionName](params, (err, results) => {
+      log(serviceName, functionName, err, results, params)
+
       if (err) {
         callback(err)
       } else if (context) {
@@ -210,9 +215,9 @@ exports.testRemoveItem = (test, opts) => {
           
           test.equal(startPools.length, 1, 'should start with one pool')
 
-          const poolId = getDeepVal(startPools[0], opts.schema.id)
+          const itemId = getDeepVal(startPools[0], opts.schema.id)
 
-          exports.callCrud(opts, 'remove', endpoints, services, poolId, context, (err, results) => {
+          exports.callCrud(opts, 'remove', endpoints, services, itemId, context, (err, results) => {
             exports.callCrud(opts, 'list', endpoints, services, context, (err, results) => {
               const endPools = results[opts.listPath]
               done(err, startPools, endPools)
