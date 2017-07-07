@@ -2,6 +2,7 @@ const AWS = require('aws-sdk')
 const imap = require('imap')
 const async = require('async')
 const debug = require('debug')
+const extend = require('extend')
 const dbutil = require('../lib/dbutil')
 
 log = debug(`simdown:testutil`)
@@ -18,20 +19,50 @@ exports.cleanup = (test, services) => {
   })
 }
 
-exports.setup = (Services, callback) => {
+exports.setup = (opts, callback) => {
   let endpoints = {}
   let services = []
 
   dbutil.setup((err, db) => {
-    async.each(Services, (Service, next) => {
+    async.each(opts.Services, (Service, next) => {
       const service = new Service()
       services.push(service)
-
+      console.log("SETTING UP", service.constructor.name)
       service.setup(db, {}, (err, endpoint) => {
+        console.log("DONE SETUP", service.constructor.name)
         endpoints[service.constructor.name] = endpoint
         next(err)
       })
     }, (err) => {
+      if (err) {
+        return callback(err)
+      }
+
+      const makeCall = (method, params, context, callback) => {
+        let [serviceName, functionName] = method
+
+        const service = exports.getInstance(endpoints, serviceName)
+        log(serviceName, functionName, 'endpoint', opts.endpoints)
+        log(serviceName, functionName, 'params', JSON.stringify(params))
+        service[functionName](params, (err, results) => {
+          log(serviceName, functionName, 'results', err, results)
+
+          if (err) {
+            callback(err)
+          } else if (context) {
+            callback(null, results, context(results))
+          } else {
+            callback(null, results)
+          }
+        })
+      }
+
+      opts.makeCall = makeCall
+      opts.services = services
+      opts.endpoints = endpoints
+
+      console.log("SETTING UP THING", endpoints)
+
       callback(err, endpoints, services)
     })
   })
@@ -116,27 +147,8 @@ exports.testCrud = (test, opts) => {
   return opts
 }
 
-
-exports.callCrud = (test, opts, type, endpoints, services, ...methodArgs) => {
-  const makeCall = (method, params, context, callback) => {
-    let [serviceName, functionName] = method
-
-    const service = exports.getInstance(endpoints, serviceName)
-    log(serviceName, functionName, 'params', params)
-    service[functionName](params, (err, results) => {
-      log(serviceName, functionName, 'results', err, results)
-
-      if (err) {
-        callback(err)
-      } else if (context) {
-        callback(null, results, context(results))
-      } else {
-        callback(null, results)
-      }
-    })
-  }
-
-  opts.crud[type](test, makeCall, ...methodArgs)
+exports.callCrud = (test, opts, type, ...methodArgs) => {
+  opts.crud[type](test, opts.makeCall, ...methodArgs)
 }
 
 exports.testCreateItem = (test, opts) => {
@@ -145,11 +157,8 @@ exports.testCreateItem = (test, opts) => {
   const testFn = isOnly ? test.only : test
 
   testFn(name, (test) => {
-    exports.setup(opts.Services, (err, endpoints, services) => {
-      opts.services = services
-      opts.endpoints = endpoints
-
-      exports.callCrud(test, opts, 'create', endpoints, services, (err, created) => {
+    exports.setup(opts, (err, endpoints, services) => {
+      exports.callCrud(test, opts, 'create', (err, created) => {
         test.equal(err, null, 'should not emit an error')
         
         const resourceId = getDeepVal(created, opts.schema.id)
@@ -167,12 +176,12 @@ exports.testUpdateItem = (test, opts) => {
   const testFn = isOnly ? test.only : test
 
   testFn(name, (test) => {
-    exports.setup(opts.Services, (err, endpoints, services) => {
-      exports.callCrud(test, opts, 'create', endpoints, services, (err, created, context) => {
+    exports.setup(opts, (err, endpoints, services) => {
+      exports.callCrud(test, opts, 'create', (err, created, context) => {
         const resourceId = getDeepVal(created, opts.schema.id)
         
-        exports.callCrud(test, opts, 'update', endpoints, services, resourceId, context, (err, updated) => {
-          exports.callCrud(test, opts, 'get', endpoints, services, resourceId, context, (err, found) => {
+        exports.callCrud(test, opts, 'update', resourceId, context, (err, updated) => {
+          exports.callCrud(test, opts, 'get', resourceId, context, (err, found) => {
             test.equal(err, null, 'should not emit an error')
 
             for (var path of opts.updatePaths) {
@@ -195,9 +204,9 @@ exports.testListItems = (test, opts) => {
   const testFn = isOnly ? test.only : test
 
   testFn(name, (test) => {
-    exports.setup(opts.Services, (err, endpoints, services) => {
-      exports.callCrud(test, opts, 'create', endpoints, services, (err, created, context) => {
-        exports.callCrud(test, opts, 'list', endpoints, services, context, (err, results) => {
+    exports.setup(opts, (err, endpoints, services) => {
+      exports.callCrud(test, opts, 'create', (err, created, context) => {
+        exports.callCrud(test, opts, 'list', context, (err, results) => {
           test.equal(err, null, 'should not emit an error')
           
           test.equal(results[opts.listPath].length, 1, 'should have one identity pool')
@@ -221,16 +230,16 @@ exports.testRemoveItem = (test, opts) => {
   const testFn = isOnly ? test.only : test
 
   testFn(name, (test) => {
-    exports.setup(opts.Services, (err, endpoints, services) => {
+    exports.setup(opts, (err, endpoints, services) => {
       async.waterfall([
         (done) => {
-          exports.callCrud(test, opts, 'create', endpoints, services, (err, results, context) => {
+          exports.callCrud(test, opts, 'create', (err, results, context) => {
             done(err, results, context)
           })
         },
         
         (results, context, done) => {
-          exports.callCrud(test, opts, 'list', endpoints, services, context, (err, results) => {
+          exports.callCrud(test, opts, 'list', context, (err, results) => {
             done(err, results, context)
           })
         },
@@ -242,8 +251,8 @@ exports.testRemoveItem = (test, opts) => {
 
           const itemId = getDeepVal(startPools[0], opts.schema.id)
 
-          exports.callCrud(test, opts, 'remove', endpoints, services, itemId, context, (err, results) => {
-            exports.callCrud(test, opts, 'list', endpoints, services, context, (err, results) => {
+          exports.callCrud(test, opts, 'remove', itemId, context, (err, results) => {
+            exports.callCrud(test, opts, 'list', context, (err, results) => {
               const endPools = results[opts.listPath]
               done(err, startPools, endPools)
             })
@@ -264,12 +273,12 @@ exports.testGetItem = (test, opts) => {
   const testFn = isOnly ? test.only : test
 
   testFn(name, (test) => {
-    exports.setup(opts.Services, (err, endpoints, services) => {
+    exports.setup(opts, (err, endpoints, services) => {
       
-      exports.callCrud(test, opts, 'create', endpoints, services, (err, created, context) => {
+      exports.callCrud(test, opts, 'create', (err, created, context) => {
         const createdId = getDeepVal(created, opts.schema.id)
         
-        exports.callCrud(test, opts, 'get', endpoints, services, createdId, context, (err, results) => {
+        exports.callCrud(test, opts, 'get', createdId, context, (err, results) => {
           test.equal(err, null, 'should not emit an error')
           
           const foundId = getDeepVal(results, opts.schema.id)
