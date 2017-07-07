@@ -57,31 +57,31 @@ A list of endpoints with implementation and some level of testing
 
 ### IAM
 
-- GetRole ✔
-- ListRoles ✔
-- CreateRole ✔
-- DeleteRole ✔
-- UpdateRoleDescription ✔
+- GetRole ✓
+- ListRoles ✓
+- CreateRole ✓
+- DeleteRole ✓
+- UpdateRoleDescription ✓
 
 ### CognitoIdentity
 
-- ListIdentityPools ✔
-- CreateIdentityPool ✔
-- UpdateIdentityPool ✔
-- DeleteIdentityPool ✔
-- DescribeIdentityPool ✔
+- ListIdentityPools ✓
+- CreateIdentityPool ✓
+- UpdateIdentityPool ✓
+- DeleteIdentityPool ✓
+- DescribeIdentityPool ✓
 
 ### CognitoIdentityServiceProvider
 
-- SignUp ✔
-- ConfirmSignUp ✔
-- ListUserPools ✔
-- CreateUserPool ✔
-- UpdateUserPool ✔
-- DeleteUserPool ✔
-- DescribeUserPool ✔
-- ListUserPoolClients ✔
-- CreateUserPoolClient ✔
-- UpdateUserPoolClient ✔
-- DeleteUserPoolClient ✔
-- DescribeUserPoolClient ✔
+- SignUp ✓
+- ConfirmSignUp ✓
+- ListUserPools ✓
+- CreateUserPool ✓
+- UpdateUserPool ✓
+- DeleteUserPool ✓
+- DescribeUserPool ✓
+- ListUserPoolClients ✓
+- CreateUserPoolClient ✓
+- UpdateUserPoolClient ✓
+- DeleteUserPoolClient ✓
+- DescribeUserPoolClient ✓
