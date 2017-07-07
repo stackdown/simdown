@@ -27,9 +27,7 @@ exports.setup = (opts, callback) => {
     async.each(opts.Services, (Service, next) => {
       const service = new Service()
       services.push(service)
-      console.log("SETTING UP", service.constructor.name)
       service.setup(db, {}, (err, endpoint) => {
-        console.log("DONE SETUP", service.constructor.name)
         endpoints[service.constructor.name] = endpoint
         next(err)
       })
@@ -60,8 +58,6 @@ exports.setup = (opts, callback) => {
       opts.makeCall = makeCall
       opts.services = services
       opts.endpoints = endpoints
-
-      console.log("SETTING UP THING", endpoints)
 
       callback(err, endpoints, services)
     })
