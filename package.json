@@ -1,6 +1,6 @@
 {
   "name": "simdown",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Cloud stack simulator using node.js and leveldb",
   "main": "index.js",
   "scripts": {
