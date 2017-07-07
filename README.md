@@ -2,6 +2,8 @@
 
 Faithful simulation of AWS Cloud Services using node.js and leveldb
 
+[![Build Status](https://travis-ci.org/stackdown/simdown.svg?branch=master)](https://travis-ci.org/stackdown/simdown)
+
 ## Highlights
 
 - 100% native, well tested es6 node.js
