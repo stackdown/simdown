@@ -4,7 +4,7 @@ const async = require('async')
 const debug = require('debug')
 const dbutil = require('../lib/dbutil')
 
-log = debug(`stackdown:testutil`)
+log = debug(`simdown:testutil`)
 
 exports.cleanup = (test, services) => {
   async.each(services, (service, next) => {

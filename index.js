@@ -1,7 +1,7 @@
 const fs = require('fs')
 const async = require('async')
 
-class Stackdown {
+class Simdown {
   setup(callback) {
     this.services = this.loadServices()
   }
@@ -20,4 +20,4 @@ class Stackdown {
   }
 }
 
-module.exports = Stackdown
+module.exports = Simdown

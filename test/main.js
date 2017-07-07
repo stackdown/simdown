@@ -1,5 +1,5 @@
 if (process.argv[2] === '--debug' || process.argv[2] === 'debug') {
-  process.env.DEBUG = process.argv[3] || 'stackdown*'
+  process.env.DEBUG = process.argv[3] || 'simdown*'
 }
 
 require('./services/iam')
