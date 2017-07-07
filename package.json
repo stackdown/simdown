@@ -9,6 +9,7 @@
   "author": "ZECTBynmo (michael.vegeto@gmail.com)",
   "license": "MIT",
   "dependencies": {
+    "async": "^2.5.0",
     "aws-sdk": "^2.80.0",
     "body-parser": "^1.17.2",
     "datamask": "^0.1.1",
