@@ -2,6 +2,7 @@ const AWS = require('aws-sdk')
 const test = require('tape')
 const async = require('async')
 const utils = require('../utils')
+const emailutil = require ('../../lib/emailutil')
 const CognitoIdentityServiceProvider = require('../../lib/services/cognito_identity_service_provider')
 
 const userPoolConfig = utils.testCrud(test, {
@@ -55,7 +56,7 @@ const userPoolConfig = utils.testCrud(test, {
   namespace: ['CognitoIdentityServiceProvider', 'userPool']
 })
 
-utils.testCrud(test, {
+const userPoolClientConfig = utils.testCrud(test, {
   // only: 'remove',
   methods: {
     get: (makeCall, id, context) => ({
@@ -116,4 +117,101 @@ utils.testCrud(test, {
   },
   Services: [CognitoIdentityServiceProvider],
   namespace: ['CognitoIdentityServiceProvider', 'userPoolClient']
+})
+
+utils.testCrud(test, {
+  // only: 'create',
+  methods: {
+    create: (makeCall) => ((callback) => {
+      // Create a user pool
+      const poolConfig = userPoolConfig.methods.create(makeCall)
+      makeCall(poolConfig.method, poolConfig.params, null, (err, poolResults) => {
+        
+        // Get the method to create a user pool client
+        utils.methodConfig(userPoolClientConfig, 'create', makeCall, (err, poolClientConfig) => {
+          
+          // Create a user pool client
+          makeCall(poolClientConfig.method, poolClientConfig.params, null, (err, poolClientResults) => {
+            let signUpResults = undefined
+            const signUpParams = {
+              Username: 'testuser1234',
+              Password: 'Amazingpass123.',
+              ClientId: poolClientResults.UserPoolClient.ClientId,
+              UserAttributes: [
+                {
+                  Name: 'email',
+                  Value: 'test@localhost'
+                }
+              ]
+            }
+
+            // Wait for a confirmation email
+            emailutil.waitForEmail((err, emailText) => {
+              const lines = emailText.trim().split('\n')
+              const splitText = lines[lines.length - 1].split(' ')
+              const confirmCode = splitText[splitText.length - 1]
+
+              const confirmParams = {
+                Username: 'testuser1234',
+                ClientId: poolClientResults.UserPoolClient.ClientId,
+                ConfirmationCode: confirmCode,
+              }
+
+              makeCall(['CognitoIdentityServiceProvider', 'confirmSignUp'], confirmParams, null, (err, finalResults) => {
+                callback(null, {results: signUpResults})
+              })
+            })
+
+            // Sign up a new user
+            makeCall(['CognitoIdentityServiceProvider', 'signUp'], signUpParams, null, (err, results) => {
+              signUpResults = results
+            })
+          })
+        })
+      })
+    }),
+
+    // get: (makeCall, id, context) => ({
+    //   params: {
+    //     ClientId: id,
+    //     UserPoolId: context.pool,
+    //   },
+    //   method: ['CognitoIdentityServiceProvider', 'describeUserPoolClient']
+    // }),
+
+    // list: (makeCall, context) => ({
+    //   params: {
+    //     MaxResults: 0,
+    //     UserPoolId: context.pool,
+    //   },
+    //   method: ['CognitoIdentityServiceProvider', 'listUserPoolClients']
+    // }),
+
+    // remove: (makeCall, id, context) => ({
+    //   params: {
+    //     ClientId: id,
+    //     UserPoolId: context.pool,
+    //   },
+    //   method: ['CognitoIdentityServiceProvider', 'deleteUserPoolClient']
+    // }),
+
+    // update: (makeCall, id, context) => ({
+    //   params: {
+    //     ClientId: id,
+    //     UserPoolId: context.pool,
+    //     ClientName: 'test-user-pool-client-updated',
+    //   },
+    //   method: ['CognitoIdentityServiceProvider', 'updateUserPoolClient']
+    // }),
+
+  },
+  listPath: 'UserPoolClients',
+  updatePaths: [
+    ['UserPoolClient', 'ClientName']
+  ],
+  schema: {
+    id: (data) => {return data.UserSub}
+  },
+  Services: [CognitoIdentityServiceProvider],
+  namespace: ['CognitoIdentityServiceProvider', 'user']
 })

@@ -1,4 +1,5 @@
 const AWS = require('aws-sdk')
+const imap = require('imap')
 const async = require('async')
 const debug = require('debug')
 const dbutil = require('../lib/dbutil')
@@ -74,24 +75,56 @@ exports.testCrud = (test, opts) => {
     opts.crud[method] = function(makeCall) {
       const config = opts.methods[method]
       const params = config.apply(null, arguments)
-      if (params.constructor === Function) {
+      const callback = arguments[arguments.length-1]
+
+      if (params.results) {
+        callback(null, params.results)
+      } else if (params.constructor === Function) {
         params((err, finalParams) => {
-          makeCall(finalParams.method, finalParams.params, finalParams.context, arguments[arguments.length-1])
+          if (finalParams.results) {
+            callback(null, finalParams.results)
+          } else {
+            makeCall(finalParams.method, finalParams.params, finalParams.context, callback)
+          }
         })
       } else {
-        makeCall(params.method, params.params, params.context, arguments[arguments.length-1])
+        makeCall(params.method, params.params, params.context, callback)
       }
     }
   })
 
-  exports.testGetItem(test, opts)
-  exports.testListItems(test, opts)
-  exports.testCreateItem(test, opts)
-  exports.testUpdateItem(test, opts)
-  exports.testRemoveItem(test, opts)
+  if (opts.crud.create) {
+    exports.testCreateItem(test, opts)
+  }
+
+  if (opts.crud.create && opts.crud.list) {
+    exports.testListItems(test, opts)
+  }
+
+  if (opts.crud.create && opts.crud.get) {
+    exports.testGetItem(test, opts)
+  }
+
+  if (opts.crud.create && opts.crud.get && opts.crud.update) {
+    exports.testUpdateItem(test, opts)
+  }
+
+  if (opts.crud.create && opts.crud.list && opts.crud.remove) {
+    exports.testRemoveItem(test, opts)
+  }
 
   return opts
 }
+
+exports.methodConfig = (testConfig, type, makeCall, callback) => {
+  const config = testConfig.methods[type](makeCall)
+  if (config.constructor === Function) {
+    config(callback)
+  } else {
+    callback(null, config)
+  }
+}
+
 
 exports.callCrud = (opts, type, endpoints, services, ...methodArgs) => {
   const makeCall = (method, params, context, callback) => {

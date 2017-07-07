@@ -1,5 +1,5 @@
 {
-  "name": "stackdown",
+  "name": "simdown",
   "version": "0.0.0",
   "description": "Cloud stack simulator using node.js and leveldb",
   "main": "index.js",
@@ -11,13 +11,16 @@
   "dependencies": {
     "aws-sdk": "^2.80.0",
     "body-parser": "^1.17.2",
+    "datamask": "^0.1.1",
     "debug": "^2.6.8",
+    "emailjs": "^1.0.10",
     "express": "^4.15.3",
     "extend": "^3.0.1",
     "level": "^1.7.0",
     "query-string": "^4.3.4",
     "rimraf": "^2.6.1",
-    "shortid": "^2.2.8"
+    "shortid": "^2.2.8",
+    "smtp-server": "^3.0.1"
   },
   "devDependencies": {
     "tape": "^4.7.0"
