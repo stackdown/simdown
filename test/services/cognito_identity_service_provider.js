@@ -165,6 +165,7 @@ test('should put a user through a sign up flow', (test) => {
         let hasGottenEmail = false
         emailutil.waitForEmail((err, emailText) => {
           clearTimeout(emailTimeout)
+          test.equal(true, true, 'should recieve confirmation email')
           done(err, signUpResults, emailText, poolClientResults)
         })
 
@@ -183,8 +184,6 @@ test('should put a user through a sign up flow', (test) => {
 
       // Confirm newly created user
       (signUpResults, emailText, poolClientResults, done) => {
-        test.equal(true, true, 'should recieve confirmation email')
-
         const lines = emailText.trim().split('\n')
         const splitText = lines[lines.length - 1].split(' ')
         const confirmCode = splitText[splitText.length - 1]
