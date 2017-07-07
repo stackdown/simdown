@@ -1,6 +1,6 @@
 {
   "name": "simdown",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Cloud stack simulator using node.js and leveldb",
   "main": "index.js",
   "scripts": {
@@ -26,5 +26,9 @@
   },
   "devDependencies": {
     "tape": "^4.7.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/stackdown/simdown.git"
   }
 }
