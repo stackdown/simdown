@@ -67,7 +67,7 @@ const userPoolClientConfig = utils.testCrud(test, {
       method: ['CognitoIdentityServiceProvider', 'describeUserPoolClient']
     }),
     
-    create: (makeCall) => ((callback) => {
+    create: (makeCall) => ((test, callback) => {
       const callConfig = userPoolConfig.methods.create(makeCall)
 
       makeCall(callConfig.method, callConfig.params, null, (err, poolResults) => {
@@ -122,13 +122,15 @@ const userPoolClientConfig = utils.testCrud(test, {
 utils.testCrud(test, {
   // only: 'create',
   methods: {
-    create: (makeCall) => ((callback) => {
+    create: (makeCall) => ((test, callback) => {
       // Create a user pool
       const poolConfig = userPoolConfig.methods.create(makeCall)
       makeCall(poolConfig.method, poolConfig.params, null, (err, poolResults) => {
         
         // Get the method to create a user pool client
-        utils.methodConfig(userPoolClientConfig, 'create', makeCall, (err, poolClientConfig) => {
+        const thunk = userPoolClientConfig.methods.create(makeCall)
+
+        thunk(test, (err, poolClientConfig) => {
           
           // Create a user pool client
           makeCall(poolClientConfig.method, poolClientConfig.params, null, (err, poolClientResults) => {
@@ -146,7 +148,11 @@ utils.testCrud(test, {
             }
 
             // Wait for a confirmation email
+            let hasGottenEmail = false
             emailutil.waitForEmail((err, emailText) => {
+              hasGottenEmail = true
+              test.equal(true, true, 'should recieve confirmation email')
+
               const lines = emailText.trim().split('\n')
               const splitText = lines[lines.length - 1].split(' ')
               const confirmCode = splitText[splitText.length - 1]
@@ -158,14 +164,24 @@ utils.testCrud(test, {
               }
 
               makeCall(['CognitoIdentityServiceProvider', 'confirmSignUp'], confirmParams, null, (err, finalResults) => {
+                test.equal(err, null, 'should confirm sign up without error')                
                 callback(null, {results: signUpResults})
               })
             })
 
             // Sign up a new user
             makeCall(['CognitoIdentityServiceProvider', 'signUp'], signUpParams, null, (err, results) => {
+              test.equal(err, null, 'should sign up without error')
               signUpResults = results
             })
+
+            // If we fail to recieve the email within 2 seconds, give up and fail
+            setTimeout(() => {
+              if (!hasGottenEmail) {
+                test.equal(true, false, 'should recieve confirmation email')
+                callback("Failed to recieve confirmation email")
+              }
+            }, 2000)
           })
         })
       })
