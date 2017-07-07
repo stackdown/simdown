@@ -16,6 +16,7 @@
     "emailjs": "^1.0.10",
     "express": "^4.15.3",
     "extend": "^3.0.1",
+    "imap": "^0.8.19",
     "level": "^1.7.0",
     "query-string": "^4.3.4",
     "rimraf": "^2.6.1",
