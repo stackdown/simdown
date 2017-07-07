@@ -18,7 +18,6 @@ const userPoolConfig = utils.testCrud(test, {
     create: (makeCall, id) => ({
       params: {
         PoolName: 'test-user-pool',
-        EmailVerificationMessage: 'original email message'
       },
       method: ['CognitoIdentityServiceProvider', 'createUserPool'],
     }),
@@ -119,131 +118,92 @@ const userPoolClientConfig = utils.testCrud(test, {
   namespace: ['CognitoIdentityServiceProvider', 'userPoolClient']
 })
 
-utils.testCrud(test, {
-  // only: 'create',
-  methods: {
-    create: (makeCall) => ((test, callback) => {
-      async.waterfall([
-        // Create a user pool
-        (done) => {
-          const poolConfig = userPoolConfig.methods.create(makeCall)
-          makeCall(poolConfig.method, poolConfig.params, null, (err, poolResults) => {
-            done(err, poolResults)
+test('should put a user through a sign up flow', (test) => {
+  let opts = {
+    Services: [CognitoIdentityServiceProvider]
+  }
+
+  utils.setup(opts, (err, endpoints, services) => {
+    const makeCall = opts.makeCall
+
+    async.waterfall([
+      // Create a user pool
+      (done) => {
+        const poolConfig = userPoolConfig.methods.create(makeCall)
+        makeCall(poolConfig.method, poolConfig.params, null, (err, poolResults) => {
+          done(err, poolResults)
+        })
+      },
+
+      // Create a user pool client
+      (poolResults, done) => {
+        const thunk = userPoolClientConfig.methods.create(makeCall)
+
+        thunk(test, (err, poolClientConfig) => {
+          makeCall(poolClientConfig.method, poolClientConfig.params, null, (err, poolClientResults) => {
+            done(err, poolClientResults)
           })
-        },
+        })
+      },
+      
+      // Sign up and get confirmation email
+      (poolClientResults, done) => {
+        let signUpResults = undefined
+        const signUpParams = {
+          Username: 'testuser1234',
+          Password: 'Amazingpass123.',
+          ClientId: poolClientResults.UserPoolClient.ClientId,
+          UserAttributes: [
+            {
+              Name: 'email',
+              Value: 'test@localhost'
+            }
+          ]
+        }
 
-        // Create a user pool client
-        (poolResults, done) => {
-          const thunk = userPoolClientConfig.methods.create(makeCall)
+        // Wait for a confirmation email
+        let hasGottenEmail = false
+        emailutil.waitForEmail((err, emailText) => {
+          clearTimeout(emailTimeout)
+          done(err, signUpResults, emailText, poolClientResults)
+        })
 
-          thunk(test, (err, poolClientConfig) => {
-            makeCall(poolClientConfig.method, poolClientConfig.params, null, (err, poolClientResults) => {
-              done(err, poolClientResults)
-            })
-          })
-        },
-        
-        // Sign up and get confirmation email
-        (poolClientResults, done) => {
-          let signUpResults = undefined
-          const signUpParams = {
-            Username: 'testuser1234',
-            Password: 'Amazingpass123.',
-            ClientId: poolClientResults.UserPoolClient.ClientId,
-            UserAttributes: [
-              {
-                Name: 'email',
-                Value: 'test@localhost'
-              }
-            ]
-          }
+        // Sign up a new user
+        makeCall(['CognitoIdentityServiceProvider', 'signUp'], signUpParams, null, (err, results) => {
+          test.equal(err, null, 'should sign up without error')
+          signUpResults = results
+        })
 
-          // Wait for a confirmation email
-          let hasGottenEmail = false
-          emailutil.waitForEmail((err, emailText) => {
-            clearTimeout(emailTimeout)
-            done(err, signUpResults, emailText, poolClientResults)
-          })
+        // If we fail to recieve the email within 5 seconds, give up and fail
+        let emailTimeout = setTimeout(() => {
+          test.equal(true, false, 'should recieve confirmation email')
+          done("Failed to recieve confirmation email")
+        }, 5000)
+      },
 
-          // Sign up a new user
-          makeCall(['CognitoIdentityServiceProvider', 'signUp'], signUpParams, null, (err, results) => {
-            test.equal(err, null, 'should sign up without error')
-            signUpResults = results
-          })
+      // Confirm newly created user
+      (signUpResults, emailText, poolClientResults, done) => {
+        test.equal(true, true, 'should recieve confirmation email')
 
-          // If we fail to recieve the email within 5 seconds, give up and fail
-          let emailTimeout = setTimeout(() => {
-            test.equal(true, false, 'should recieve confirmation email')
-            done("Failed to recieve confirmation email")
-          }, 5000)
-        },
+        const lines = emailText.trim().split('\n')
+        const splitText = lines[lines.length - 1].split(' ')
+        const confirmCode = splitText[splitText.length - 1]
 
-        // Confirm newly created user
-        (signUpResults, emailText, poolClientResults, done) => {
-          test.equal(true, true, 'should recieve confirmation email')
+        const confirmParams = {
+          Username: 'testuser1234',
+          ClientId: poolClientResults.UserPoolClient.ClientId,
+          ConfirmationCode: confirmCode,
+        }
 
-          const lines = emailText.trim().split('\n')
-          const splitText = lines[lines.length - 1].split(' ')
-          const confirmCode = splitText[splitText.length - 1]
+        makeCall(['CognitoIdentityServiceProvider', 'confirmSignUp'], confirmParams, null, (err, finalResults) => {
+          test.equal(err, null, 'should confirm sign up without error')                
+          done(null, {results: signUpResults})
+        })
+      },
 
-          const confirmParams = {
-            Username: 'testuser1234',
-            ClientId: poolClientResults.UserPoolClient.ClientId,
-            ConfirmationCode: confirmCode,
-          }
-
-          makeCall(['CognitoIdentityServiceProvider', 'confirmSignUp'], confirmParams, null, (err, finalResults) => {
-            test.equal(err, null, 'should confirm sign up without error')                
-            callback(null, {results: signUpResults})
-          })
-        },
-
-      ], (err) => {
-        callback(err)
-      })
-    }),
-
-    // get: (makeCall, id, context) => ({
-    //   params: {
-    //     ClientId: id,
-    //     UserPoolId: context.pool,
-    //   },
-    //   method: ['CognitoIdentityServiceProvider', 'getUser']
-    // }),
-
-    // list: (makeCall, context) => ({
-    //   params: {
-    //     MaxResults: 0,
-    //     UserPoolId: context.pool,
-    //   },
-    //   method: ['CognitoIdentityServiceProvider', 'listUserPoolClients']
-    // }),
-
-    // remove: (makeCall, id, context) => ({
-    //   params: {
-    //     ClientId: id,
-    //     UserPoolId: context.pool,
-    //   },
-    //   method: ['CognitoIdentityServiceProvider', 'deleteUserPoolClient']
-    // }),
-
-    // update: (makeCall, id, context) => ({
-    //   params: {
-    //     ClientId: id,
-    //     UserPoolId: context.pool,
-    //     ClientName: 'test-user-pool-client-updated',
-    //   },
-    //   method: ['CognitoIdentityServiceProvider', 'updateUserPoolClient']
-    // }),
-
-  },
-  listPath: 'UserPoolClients',
-  updatePaths: [
-    ['UserPoolClient', 'ClientName']
-  ],
-  schema: {
-    id: (data) => {return data.UserSub}
-  },
-  Services: [CognitoIdentityServiceProvider],
-  namespace: ['CognitoIdentityServiceProvider', 'user']
+    ], (err) => {
+      test.equal(err, null, 'should run flow without error')
+      utils.cleanup(test, services)
+    })
+  })
 })
