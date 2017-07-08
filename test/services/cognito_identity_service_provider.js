@@ -246,6 +246,19 @@ test('should put a user through a sign up and sign in flows', (test) => {
         })
       },
 
+      // Fetch this user's attributes
+      (authResults, done) => {
+        const params = {
+          AccessToken: authResults.accessToken.jwtToken
+        }
+
+        makeCall(['CognitoIdentityServiceProvider', 'getUser'], params, null, (err, results) => {
+          test.equal(err, null, 'should get user data without error')
+          test.equal(results.Username, 'testuser1234', 'should come back with sensible data')
+          done(err, results)
+        })
+      }
+
     ], (err) => {
       test.equal(err, null, 'should complete flow without error')
       utils.cleanup(test, services)
