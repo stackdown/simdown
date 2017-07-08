@@ -76,6 +76,7 @@ A list of endpoints with implementation and some level of testing
 ### CognitoIdentityServiceProvider
 
 - SignUp ✓
+- GetUser ✓
 - InitiateAuth ✓
 - ConfirmSignUp ✓
 - ListUserPools ✓
