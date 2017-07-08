@@ -79,16 +79,14 @@ A list of endpoints with implementation and some level of testing
 - GetUser ✓
 - InitiateAuth ✓
 - ConfirmSignUp ✓
-- RespondToAuthChallenge ✓
-
 - ListUserPools ✓
 - CreateUserPool ✓
 - UpdateUserPool ✓
 - DeleteUserPool ✓
 - DescribeUserPool ✓
-
 - ListUserPoolClients ✓
 - CreateUserPoolClient ✓
 - UpdateUserPoolClient ✓
 - DeleteUserPoolClient ✓
 - DescribeUserPoolClient ✓
+- RespondToAuthChallenge ✓
