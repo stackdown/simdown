@@ -10,7 +10,7 @@ const {
   CognitoUserPool,
   CognitoUserAttribute,
   AuthenticationDetails,
-} = require('amazon-cognito-identity-js')
+} = require('../../node_modules/amazon-cognito-identity-js/dist/amazon-cognito-identity')
 
 const userPoolConfig = utils.testCrud(test, {
   // only: 'remove',
