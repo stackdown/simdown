@@ -237,6 +237,7 @@ test('should put a user through a sign up and sign in flows', (test) => {
         cognitoUser.authenticateUser(authenticationDetails, {
           onSuccess: (results) => {
             test.equal(true, true, 'should authenticate successfully')
+            test.notEqual(results.accessToken.jwtToken, 'should return with an access token')
             done(null, results)
           },
           onFailure: (err) => {
