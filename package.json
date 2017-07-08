@@ -15,6 +15,7 @@
     "body-parser": "^1.17.2",
     "datamask": "^0.1.1",
     "debug": "^2.6.8",
+    "dynalite": "^1.2.0",
     "emailjs": "^1.0.10",
     "express": "^4.15.3",
     "extend": "^3.0.1",
