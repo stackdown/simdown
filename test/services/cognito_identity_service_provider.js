@@ -5,6 +5,13 @@ const utils = require('../utils')
 const emailutil = require ('../../lib/emailutil')
 const CognitoIdentityServiceProvider = require('../../lib/services/cognito_identity_service_provider')
 
+const {
+  CognitoUser,
+  CognitoUserPool,
+  CognitoUserAttribute,
+  AuthenticationDetails,
+} = require('amazon-cognito-identity-js')
+
 const userPoolConfig = utils.testCrud(test, {
   // only: 'remove',
   methods: {
@@ -118,7 +125,7 @@ const userPoolClientConfig = utils.testCrud(test, {
   namespace: ['CognitoIdentityServiceProvider', 'userPoolClient']
 })
 
-test('should put a user through a sign up flow', (test) => {
+test('should put a user through a sign up and sign in flows', (test) => {
   let opts = {
     Services: [CognitoIdentityServiceProvider]
   }
@@ -141,13 +148,13 @@ test('should put a user through a sign up flow', (test) => {
 
         thunk(test, (err, poolClientConfig) => {
           makeCall(poolClientConfig.method, poolClientConfig.params, null, (err, poolClientResults) => {
-            done(err, poolClientResults)
+            done(err, poolResults, poolClientResults)
           })
         })
       },
       
       // Sign up and get confirmation email
-      (poolClientResults, done) => {
+      (poolResults, poolClientResults, done) => {
         let signUpResults = undefined
         const signUpParams = {
           Username: 'testuser1234',
@@ -166,7 +173,7 @@ test('should put a user through a sign up flow', (test) => {
         emailutil.waitForEmail((err, emailText) => {
           clearTimeout(emailTimeout)
           test.equal(true, true, 'should recieve confirmation email')
-          done(err, signUpResults, emailText, poolClientResults)
+          done(err, poolResults, signUpResults, emailText, poolClientResults)
         })
 
         // Sign up a new user
@@ -183,7 +190,7 @@ test('should put a user through a sign up flow', (test) => {
       },
 
       // Confirm newly created user
-      (signUpResults, emailText, poolClientResults, done) => {
+      (poolResults, signUpResults, emailText, poolClientResults, done) => {
         const lines = emailText.trim().split('\n')
         const splitText = lines[lines.length - 1].split(' ')
         const confirmCode = splitText[splitText.length - 1]
@@ -194,14 +201,53 @@ test('should put a user through a sign up flow', (test) => {
           ConfirmationCode: confirmCode,
         }
 
-        makeCall(['CognitoIdentityServiceProvider', 'confirmSignUp'], confirmParams, null, (err, finalResults) => {
+        makeCall(['CognitoIdentityServiceProvider', 'confirmSignUp'], confirmParams, null, (err, confirmResults) => {
           test.equal(err, null, 'should confirm sign up without error')                
-          done(null, {results: signUpResults})
+          done(null, poolResults, signUpResults, emailText, poolClientResults)
+        })
+      },
+
+      // Sign in with our new user
+      (poolResults, signUpResults, emailText, poolClientResults, done) => {
+        const poolData = {
+          ClientId: poolClientResults.UserPoolClient.ClientId,
+          UserPoolId: poolResults.UserPool.Id,
+          endpoint: endpoints['CognitoIdentityServiceProvider']
+        }
+
+        var userPool = new CognitoUserPool(poolData)
+
+        const userData = {
+          Pool: userPool,
+          Username:'testuser1234',
+        }
+
+        const authDetails = new AuthenticationDetails({
+          Username: 'testuser1234',
+          Password: 'Amazingpass123.',
+        })
+
+        var cognitoUser = new CognitoUser(userData)
+
+        const authenticationDetails = new AuthenticationDetails({
+          Username: 'testuser1234',
+          Password: 'Amazingpass123.',
+        })
+
+        cognitoUser.authenticateUser(authenticationDetails, {
+          onSuccess: (results) => {
+            test.equal(true, true, 'should authenticate successfully')
+            done(null, results)
+          },
+          onFailure: (err) => {
+            test.equal(true, false, 'should authenticate successfully')
+            done(err)
+          }
         })
       },
 
     ], (err) => {
-      test.equal(err, null, 'should run flow without error')
+      test.equal(err, null, 'should complete flow without error')
       utils.cleanup(test, services)
     })
   })
