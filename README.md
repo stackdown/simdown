@@ -6,7 +6,7 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb
 
 ## Highlights
 
-- 100% native, well tested es6 node.js
+- 100% node.js
 - All services running in process (or optioanlly in their own processes) for debugging and flexibility
 - Starting with services not covered by competing libraries like [localstack](https://github.com/atlassian/localstack)
     - IAM
