@@ -1,21 +1,28 @@
 # SimDown
 
-Faithful simulation of AWS Cloud Services using node.js and leveldb
+Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for testing interactions with AWS
 
 [![Build Status](https://travis-ci.org/stackdown/simdown.svg?branch=master)](https://travis-ci.org/stackdown/simdown)
 
-## Highlights
+## Why SimDown?
 
-- 100% node.js
-- All services running in process (or optionally in their own processes) for debugging and flexibility
-- Services list:
-    - IAM
-    - CognitoIdentity
-    - CognitoIdentityServiceProvider
+Testing applciations that work with AWS API's is difficult. Fortunately all AWS SDK's are built with an option to send requests to a custom endpoint. SimDown launches a series of http servers that simulate AWS services, and can interact with eachother to properly simulate a real production system. In the background, we keep track of AWS state using leveldb, which allows us a lot of flexible storage options.
 
-## Status
+#### Highlights
 
-Under active development. See Progress section.
+- 100% node.js - no need for external dependencies
+- All services can be run in-process (but don't have to be), meaning better debugging and flexibility
+- Custom storage - provide your own leveldb storage, or any other *-down store
+- Saved states - capture, save, and restore state for all APIs
+- Hooks - callbacks before and after any API call
+- Multi-API flows - test interaction across multiple APIs, eg. hook up an API gateway to a lambda, and trigger the lambda via http
+
+#### Services
+    
+- IAM
+- DynamoDB
+- CognitoIdentity
+- CognitoIdentityServiceProvider
 
 ## Usage
 
@@ -42,7 +49,7 @@ Close down a running server
 
 ### Client
 
-To use SimDown, simply use the `endpoint` option of the AWS SDK (works from browser, node, or any AWS SDK)
+To use SimDown, simply use the `endpoint` option of the AWS SDK (works from browser, node, python, Java, or any AWS SDK)
 
 ```JavaScript
   const AWS = require('aws-sdk')
@@ -54,8 +61,6 @@ To use SimDown, simply use the `endpoint` option of the AWS SDK (works from brow
 ```
 
 ## Progress
-
-A list of endpoints with implementation and some level of testing
 
 ### IAM
 
