@@ -6,7 +6,7 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 
 ## Why SimDown?
 
-Testing applciations that work with AWS API's is difficult. Fortunately all AWS SDK's are built with an option to send requests to a custom endpoint. SimDown launches a series of http servers that simulate AWS services, and can interact with eachother to properly simulate a real production system. In the background, we keep track of AWS state using leveldb, which allows us a lot of flexible storage options.
+Testing applciations that work with AWS API's can be difficult. Fortunately all AWS SDK's are built with an option to send requests to a custom endpoint. SimDown launches a series of http servers that simulate AWS services, and can interact with eachother to properly simulate a real production system. In the background, we keep track of AWS state using leveldb, which allows us a lot of flexible storage options.
 
 #### Highlights
 
@@ -59,39 +59,3 @@ To use SimDown, simply use the `endpoint` option of the AWS SDK (works from brow
     endpoint: 'http://localhost:14353'
   })
 ```
-
-## Progress
-
-### IAM
-
-- GetRole ✓
-- ListRoles ✓
-- CreateRole ✓
-- DeleteRole ✓
-- UpdateRoleDescription ✓
-
-### CognitoIdentity
-
-- ListIdentityPools ✓
-- CreateIdentityPool ✓
-- UpdateIdentityPool ✓
-- DeleteIdentityPool ✓
-- DescribeIdentityPool ✓
-
-### CognitoIdentityServiceProvider
-
-- SignUp ✓
-- GetUser ✓
-- InitiateAuth ✓
-- ConfirmSignUp ✓
-- ListUserPools ✓
-- CreateUserPool ✓
-- UpdateUserPool ✓
-- DeleteUserPool ✓
-- DescribeUserPool ✓
-- ListUserPoolClients ✓
-- CreateUserPoolClient ✓
-- UpdateUserPoolClient ✓
-- DeleteUserPoolClient ✓
-- DescribeUserPoolClient ✓
-- RespondToAuthChallenge ✓
