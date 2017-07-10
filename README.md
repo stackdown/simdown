@@ -36,6 +36,7 @@ SimDown launches a series of http servers that simulate AWS services. The servic
 - CognitoIdentityServiceProvider
 - Kinesis (via [kinesalite](https://github.com/mhart/kinesalite))
 - DynamoDB (via [dynalite](https://github.com/mhart/dynalite))
+- Lambda (coming soon)
 - IAM (roles only)
 - SQS (coming soon)
 - SNS (coming soon)
