@@ -92,7 +92,7 @@ Hooks allow you to specify functions to be called before/after a given API call.
 
 ### Thanks
 
-Coverage for DynamoDB and Kinesis come from [mhart](https://github.com/mhart)'s excellent simulators.
+Coverage for DynamoDB and Kinesis come from [mhart](https://github.com/mhart)'s excellent simulators:
 
-Kinesis: https://github.com/mhart/dynalite
-Kinesis: https://github.com/mhart/kinesalite
+- Kinesis: https://github.com/mhart/kinesalite
+= DynamoDB: https://github.com/mhart/dynalite
