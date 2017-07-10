@@ -14,24 +14,12 @@ test('should put a user through a sign up and sign in flows', (test) => {
     const params = {
       TableName: 'simdown-test', 
       AttributeDefinitions: [
-        {
-          AttributeName: 'identifier',
-          AttributeType: 'S'
-        },
-        {
-          AttributeName: "start",
-          AttributeType: 'N'
-        },
+        { AttributeName: 'identifier', AttributeType: 'S' },
+        { AttributeName: "start", AttributeType: 'N' },
       ],
       KeySchema: [
-        {
-          AttributeName: 'identifier',
-          KeyType: 'HASH'
-        },
-        {
-          AttributeName: 'start',
-          KeyType: 'RANGE'
-        }
+        { AttributeName: 'identifier', KeyType: 'HASH' },
+        { AttributeName: 'start', KeyType: 'RANGE' }
       ],
       ProvisionedThroughput: {
         ReadCapacityUnits: 5,
