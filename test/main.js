@@ -11,5 +11,6 @@ if (process.argv[2] === '--debug' || process.argv[2] === 'debug') {
 
 require('./module')
 require('./services/iam')
+require('./services/dynamo')
 require('./services/cognito_identity')
 require('./services/cognito_identity_service_provider')
