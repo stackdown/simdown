@@ -37,6 +37,8 @@ SimDown launches a series of http servers that simulate AWS services. The servic
 - Kinesis (via [kinesalite](https://github.com/mhart/kinesalite))
 - DynamoDB (via [dynalite](https://github.com/mhart/dynalite))
 - IAM (roles only)
+- SQS (coming soon)
+- SNS (coming soon)
 
 ## Usage
 
