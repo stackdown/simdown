@@ -22,6 +22,8 @@
     "imap": "^0.8.19",
     "level": "^1.7.0",
     "query-string": "^4.3.4",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.1",
     "rimraf": "^2.6.1",
     "shortid": "^2.2.8",
     "smtp-server": "^3.0.1"
