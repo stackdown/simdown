@@ -32,7 +32,6 @@ Testing applciations that work with AWS API's can be difficult because there's n
 - No ability to save/restore API state
 - Missing important services
 - Multiple languages used means forced to run in separate processess, increased complexity
-- Relatively low level of testing
 
 SimDown launches a series of http servers that simulate AWS services. The services can interact with each other to properly simulate Amazon's real system. In the background SimDown keeps track of AWS state using leveldb, which allows a lot of flexible storage options.
 
