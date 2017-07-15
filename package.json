@@ -6,6 +6,9 @@
   "scripts": {
     "test": "node test/main.js"
   },
+  "bin": {
+    "simdown": "./bin/main.js"
+  },
   "author": "ZECTBynmo (michael.vegeto@gmail.com)",
   "license": "MIT",
   "dependencies": {
@@ -29,7 +32,8 @@
     "rimraf": "^2.6.1",
     "shortid": "^2.2.8",
     "smtp-server": "^3.0.1",
-    "unzip": "^0.1.11"
+    "unzip": "^0.1.11",
+    "yargs": "^8.0.2"
   },
   "devDependencies": {
     "tape": "^4.7.0"
