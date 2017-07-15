@@ -6,11 +6,11 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 
 ## Highlights
 
+- State Management - capture, save, and restore state for all APIs
+- API Call Hooks - callbacks before and after any API call
 - 100% node.js - no need for external dependencies
-- All services can be run in-process (but don't have to be), meaning better performance, debugging, and flexibility
-- Custom storage - provide your own leveldb storage, or any other *-down store
-- Saved states - capture, save, and restore state for all APIs
-- Hooks - callbacks before and after any API call
+- Performance - all services can be run in-process for better performance, debugging, and flexibility
+- Custom storage - optionally provide your own leveldb storage, or any other *-down store
 - Multi-API flows - test interaction across multiple APIs, eg. hook up an API gateway to a lambda, and trigger the lambda via http
 
 #### Services
@@ -27,11 +27,12 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 
 ## Why SimDown?
 
-Testing applciations that work with AWS API's can be difficult because there's no way to simulate them locally. Existing solutions like [localstack](https://github.com/localstack/localstack) are awesome (!) but they have a couple issues:
+Testing applciations that work with AWS API's can be difficult because there's no way to simulate them locally. Existing solutions like [localstack](https://github.com/localstack/localstack) are awesome (!) but they have a few important shortcomings:
 
 - No ability to save/restore API state
+- No hooks before/after method calls
 - Missing important services
-- Multiple languages used means forced to run in separate processess, increased complexity
+- Multiple languages and binary dependencies
 
 SimDown launches a series of http servers that simulate AWS services. The services can interact with each other to properly simulate Amazon's real system. In the background SimDown keeps track of AWS state using leveldb, which allows a lot of flexible storage options.
 
