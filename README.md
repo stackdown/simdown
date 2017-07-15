@@ -76,8 +76,9 @@ To use SimDown, simply use the `endpoint` option of the AWS SDK (works from brow
 Hooks allow you to specify functions to be called before/after a given API call. They'll be passed a copy of the incoming request for inspection/modification.
 
 ```JavaScript
-  function beforeTableCreate(req, done) {
-    console.log("")
+  function beforeTableCreate(callPath, data, done) {
+    console.log("Before", callPath.join(':')) // outputs "Before DynamoDB:CreateTable"
+    done()
   }
 
   const simdown = new SimDown({
