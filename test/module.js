@@ -4,7 +4,7 @@ const SimDown = require('../')
 test('module tests', (test) => {
   const simdown = new SimDown()
 
-  simdown.setup((err, endpoints) => {
+  simdown.setup({}, (err, endpoints) => {
     simdown.stop(() => {
       test.equal(err, null, 'should setup without error')
       test.equal(Object.keys(endpoints).length, Object.keys(simdown.Services).length, 'should setup an endpoint for all services')

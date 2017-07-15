@@ -10,6 +10,7 @@ if (process.argv[2] === '--debug' || process.argv[2] === 'debug') {
 }
 
 require('./hooks')
+require('./state')
 require('./module')
 require('./services/iam')
 require('./services/dynamo')
