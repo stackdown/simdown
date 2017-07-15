@@ -3,7 +3,7 @@ const test = require('tape')
 const utils = require('../utils')
 const DynamoService = require('../../lib/services/dynamo')
 
-test('should put a user through a sign up and sign in flows', (test) => {
+test('dynamo table creation', (test) => {
   let opts = {
     Services: [DynamoService]
   }
