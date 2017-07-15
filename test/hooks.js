@@ -1,3 +1,4 @@
+const AWS = require('aws-sdk')
 const test = require('tape')
 const utils = require('./utils')
 const SimDown = require('../')
@@ -35,7 +36,7 @@ test('hook reporting', (test) => {
   })
 })
 
-test('hooks during makeCall', (test) => {
+test('hooks during method calls', (test) => {
   let hasBefore = false
   let hasAfter = false
 
@@ -52,8 +53,8 @@ test('hooks during makeCall', (test) => {
   let opts = {
     Services: [DynamoService],
     hooks: {
-      'DynamoDB:createTable:before': beforeFn,
-      'DynamoDB:createTable:after': afterFn
+      'DynamoDB:CreateTable:before': beforeFn,
+      'DynamoDB:CreateTable:after': afterFn
     }
   }
 
@@ -76,7 +77,12 @@ test('hooks during makeCall', (test) => {
       }
     }
 
-    makeCall(['DynamoDB', 'createTable'], params, null, (err, results) => {
+    const dynamo = new AWS.DynamoDB({
+      region: 'us-east-1',
+      endpoint: endpoints['DynamoDB']
+    })
+
+    dynamo.createTable(params, (err, results) => {
       test.equal(err, null, 'should create table without error')
       test.equal(hasBefore, true, 'should get before hook callback')
       test.equal(hasAfter, true, 'should get after hook callback')

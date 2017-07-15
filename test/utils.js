@@ -42,23 +42,19 @@ exports.setup = (opts, callback) => {
         const awsService = exports.getInstance(endpoints, serviceName)
         log(serviceName, functionName, 'endpoint', opts.endpoints)
         log(serviceName, functionName, 'params', JSON.stringify(params))
-        
-        services[serviceName].reportCall([serviceName, functionName, 'before'], {method, params}, (err) => {
-          if (err) {return callback(err)}
+      
+        if (err) {return callback(err)}
 
-          awsService[functionName](params, (err, results) => {
-            log(serviceName, functionName, 'results', err, results)
+        awsService[functionName](params, (err, results) => {
+          log(serviceName, functionName, 'results', err, results)
 
-            services[serviceName].reportCall([serviceName, functionName, 'after'], {method, params, err, results}, (err) => {
-              if (err) {
-                callback(err)
-              } else if (context) {
-                callback(null, results, context(results))
-              } else {
-                callback(null, results)
-              }
-            })
-          })
+          if (err) {
+            callback(err)
+          } else if (context) {
+            callback(null, results, context(results))
+          } else {
+            callback(null, results)
+          }
         })
       }
 
