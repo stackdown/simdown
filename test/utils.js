@@ -21,12 +21,12 @@ exports.cleanup = (test, services) => {
 
 exports.setup = (opts, callback) => {
   let endpoints = {}
-  let services = []
+  let services = {}
 
   dbutil.setup((err, db) => {
     async.each(opts.Services, (Service, next) => {
-      const service = new Service()
-      services.push(service)
+      const service = new Service({hooks: opts.hooks})
+      services[service.constructor.name] = service
       service.setup(db, {}, (err, endpoint) => {
         endpoints[service.constructor.name] = endpoint
         next(err)
@@ -39,19 +39,26 @@ exports.setup = (opts, callback) => {
       const makeCall = (method, params, context, callback) => {
         let [serviceName, functionName] = method
 
-        const service = exports.getInstance(endpoints, serviceName)
+        const awsService = exports.getInstance(endpoints, serviceName)
         log(serviceName, functionName, 'endpoint', opts.endpoints)
         log(serviceName, functionName, 'params', JSON.stringify(params))
-        service[functionName](params, (err, results) => {
-          log(serviceName, functionName, 'results', err, results)
+        
+        services[serviceName].reportCall([serviceName, functionName, 'before'], {method, params}, (err) => {
+          if (err) {return callback(err)}
 
-          if (err) {
-            callback(err)
-          } else if (context) {
-            callback(null, results, context(results))
-          } else {
-            callback(null, results)
-          }
+          awsService[functionName](params, (err, results) => {
+            log(serviceName, functionName, 'results', err, results)
+
+            services[serviceName].reportCall([serviceName, functionName, 'after'], {method, params, err, results}, (err) => {
+              if (err) {
+                callback(err)
+              } else if (context) {
+                callback(null, results, context(results))
+              } else {
+                callback(null, results)
+              }
+            })
+          })
         })
       }
 

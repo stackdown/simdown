@@ -9,6 +9,7 @@ if (process.argv[2] === '--debug' || process.argv[2] === 'debug') {
   process.env.DEBUG = process.argv[3] || 'simdown*'
 }
 
+require('./hooks')
 require('./module')
 require('./services/iam')
 require('./services/dynamo')
