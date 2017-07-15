@@ -21,6 +21,7 @@
     "express": "^4.15.3",
     "extend": "^3.0.1",
     "imap": "^0.8.19",
+    "kinesalite": "^1.11.6",
     "level": "^1.7.0",
     "query-string": "^4.3.4",
     "request": "^2.81.0",
