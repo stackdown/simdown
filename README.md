@@ -4,22 +4,7 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 
 [![Build Status](https://travis-ci.org/stackdown/simdown.svg?branch=master)](https://travis-ci.org/stackdown/simdown)
 
-## Why SimDown?
-
-Testing applciations that work with AWS API's can be difficult because there's no way to simulate them locally. Existing solutions like [localstack](https://github.com/localstack/localstack) are awesome (!) but they have a couple issues:
-
-- No ability to save/restore API state
-- Missing important services
-  - CognitoIdentity
-  - CognitoIdentityServiceProvider
-  - CloudWatchLogs
-  - CloudWatchEvents
-- Multiple languages used means forced to run in separate processess, increased complexity
-- Low level of testing
-
-SimDown launches a series of http servers that simulate AWS services. The services can interact with each other to properly simulate Amazon's real system. In the background SimDown keeps track of AWS state using leveldb, which allows a lot of flexible storage options.
-
-#### Highlights
+## Highlights
 
 - 100% node.js - no need for external dependencies
 - All services can be run in-process (but don't have to be), meaning better performance, debugging, and flexibility
@@ -31,7 +16,6 @@ SimDown launches a series of http servers that simulate AWS services. The servic
 #### Services
     
 - APIGateway (coming soon)
-- CloudWatchEvents (coming soon)
 - CognitoIdentity
 - CognitoIdentityServiceProvider
 - Kinesis (via [kinesalite](https://github.com/mhart/kinesalite))
@@ -40,6 +24,17 @@ SimDown launches a series of http servers that simulate AWS services. The servic
 - IAM (roles only)
 - SQS (coming soon)
 - SNS (coming soon)
+
+## Why SimDown?
+
+Testing applciations that work with AWS API's can be difficult because there's no way to simulate them locally. Existing solutions like [localstack](https://github.com/localstack/localstack) are awesome (!) but they have a couple issues:
+
+- No ability to save/restore API state
+- Missing important services
+- Multiple languages used means forced to run in separate processess, increased complexity
+- Relatively low level of testing
+
+SimDown launches a series of http servers that simulate AWS services. The services can interact with each other to properly simulate Amazon's real system. In the background SimDown keeps track of AWS state using leveldb, which allows a lot of flexible storage options.
 
 ## Usage
 
