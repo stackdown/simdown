@@ -63,7 +63,7 @@ const userPoolConfig = utils.testCrud(test, {
 })
 
 const userPoolClientConfig = utils.testCrud(test, {
-  // only: 'remove',
+  // only: 'list',
   methods: {
     get: (makeCall, id, context) => ({
       params: {
@@ -73,19 +73,21 @@ const userPoolClientConfig = utils.testCrud(test, {
       method: ['CognitoIdentityServiceProvider', 'describeUserPoolClient']
     }),
     
-    create: (makeCall) => ((test, callback) => {
-      const callConfig = userPoolConfig.methods.create(makeCall)
+    create: (makeCall) => ({
+      method: ['CognitoIdentityServiceProvider', 'createUserPoolClient'],
+      params: (test, callback) => {
+        const callConfig = userPoolConfig.methods.create(makeCall)
 
-      makeCall(callConfig.method, callConfig.params, null, (err, poolResults) => {
-        callback(err, {
-          params: {
-            ClientName: 'test-user-pool-client',
-            UserPoolId: poolResults ? poolResults.UserPool.Id : undefined,
-          },
-          method: ['CognitoIdentityServiceProvider', 'createUserPoolClient'],
-          context: (results) => ({pool: poolResults.UserPool.Id})
+        makeCall(callConfig.method, callConfig.params, null, (err, poolResults) => {
+          callback(err, {
+            params: {
+              ClientName: 'test-user-pool-client',
+              UserPoolId: poolResults ? poolResults.UserPool.Id : undefined,
+            },
+            context: (results) => ({pool: poolResults.UserPool.Id})
+          })
         })
-      })
+      }
     }),
 
     list: (makeCall, context) => ({
@@ -144,10 +146,10 @@ test('should put a user through a sign up and sign in flows', (test) => {
 
       // Create a user pool client
       (poolResults, done) => {
-        const thunk = userPoolClientConfig.methods.create(makeCall)
+        const params = userPoolClientConfig.methods.create(makeCall)
 
-        thunk(test, (err, poolClientConfig) => {
-          makeCall(poolClientConfig.method, poolClientConfig.params, null, (err, poolClientResults) => {
+        params.params(test, (err, poolClientConfig) => {
+          makeCall(params.method, poolClientConfig.params, null, (err, poolClientResults) => {
             done(err, poolResults, poolClientResults)
           })
         })

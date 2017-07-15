@@ -109,12 +109,12 @@ exports.testCrud = (test, opts) => {
 
       if (params.results) {
         callback(null, params.results)
-      } else if (params.constructor === Function) {
-        params(test, (err, finalParams) => {
+      } else if (params.params.constructor === Function) {
+        params.params(test, (err, finalParams) => {
           if (finalParams.results) {
             callback(null, finalParams.results)
           } else {
-            makeCall(finalParams.method, finalParams.params, finalParams.context, callback)
+            makeCall(params.method, finalParams.params, finalParams.context, callback)
           }
         })
       } else {
@@ -155,13 +155,28 @@ exports.testCreateItem = (test, opts) => {
   const isOnly = opts.only === true || opts.only === 'create'
   const testFn = isOnly ? test.only : test
 
+  let hasBefore = false
+  let hasAfter = false
+  const beforeFn = (path, report, done) => {hasBefore = true; done()}
+  const afterFn = (path, report, done) => {hasAfter = true; done()}
+
   testFn(name, (test) => {
+    const method = opts.methods.create().method
+
+    opts.hooks = {}
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:before`] = beforeFn
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:after`] = afterFn
+
     exports.setup(opts, (err, endpoints, services) => {
+
       exports.callCrud(test, opts, 'create', (err, created) => {
         test.equal(err, null, 'should not emit an error')
         
         const resourceId = getDeepVal(created, opts.schema.id)
         test.notEqual(resourceId, undefined, 'should generate an id')
+        
+        test.equal(hasBefore, true, 'should call before hook')
+        test.equal(hasAfter, true, 'should call after hook')
         
         exports.cleanup(test, services)
       })
@@ -174,7 +189,18 @@ exports.testUpdateItem = (test, opts) => {
   const isOnly = opts.only === true || opts.only === 'update'
   const testFn = isOnly ? test.only : test
 
+  let hasBefore = false
+  let hasAfter = false
+  const beforeFn = (path, report, done) => {hasBefore = true; done()}
+  const afterFn = (path, report, done) => {hasAfter = true; done()}
+
   testFn(name, (test) => {
+    const method = opts.methods.create().method
+
+    opts.hooks = {}
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:before`] = beforeFn
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:after`] = afterFn
+
     exports.setup(opts, (err, endpoints, services) => {
       exports.callCrud(test, opts, 'create', (err, created, context) => {
         const resourceId = getDeepVal(created, opts.schema.id)
@@ -189,6 +215,9 @@ exports.testUpdateItem = (test, opts) => {
               test.notEqual(original, updated, `should have updated ${path.join('.')}`)
             }
 
+            test.equal(hasBefore, true, 'should call before hook')
+            test.equal(hasAfter, true, 'should call after hook')
+
             exports.cleanup(test, services)
           })
         })
@@ -202,7 +231,18 @@ exports.testListItems = (test, opts) => {
   const isOnly = opts.only === true || opts.only === 'list'
   const testFn = isOnly ? test.only : test
 
+  let hasBefore = false
+  let hasAfter = false
+  const beforeFn = (path, report, done) => {hasBefore = true; done()}
+  const afterFn = (path, report, done) => {hasAfter = true; done()}
+
   testFn(name, (test) => {
+    const method = opts.methods.create().method
+
+    opts.hooks = {}
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:before`] = beforeFn
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:after`] = afterFn
+
     exports.setup(opts, (err, endpoints, services) => {
       exports.callCrud(test, opts, 'create', (err, created, context) => {
         exports.callCrud(test, opts, 'list', context, (err, results) => {
@@ -216,6 +256,9 @@ exports.testListItems = (test, opts) => {
             test.notEqual(poolId, undefined, 'should retrieve pool ids')
           }
 
+          test.equal(hasBefore, true, 'should call before hook')
+          test.equal(hasAfter, true, 'should call after hook')
+
           exports.cleanup(test, services)
         })
       })
@@ -228,7 +271,18 @@ exports.testRemoveItem = (test, opts) => {
   const isOnly = opts.only === true || opts.only === 'remove'
   const testFn = isOnly ? test.only : test
 
+  let hasBefore = false
+  let hasAfter = false
+  const beforeFn = (path, report, done) => {hasBefore = true; done()}
+  const afterFn = (path, report, done) => {hasAfter = true; done()}
+
   testFn(name, (test) => {
+    const method = opts.methods.create().method
+
+    opts.hooks = {}
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:before`] = beforeFn
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:after`] = afterFn
+
     exports.setup(opts, (err, endpoints, services) => {
       async.waterfall([
         (done) => {
@@ -260,6 +314,10 @@ exports.testRemoveItem = (test, opts) => {
 
       ], (err, startPools, endPools) => {
         test.equal(endPools.length, 0, 'should end with no pools')
+        
+        test.equal(hasBefore, true, 'should call before hook')
+        test.equal(hasAfter, true, 'should call after hook')
+
         exports.cleanup(test, services)
       })
     })
@@ -271,7 +329,18 @@ exports.testGetItem = (test, opts) => {
   const isOnly = opts.only === true || opts.only === 'get'
   const testFn = isOnly ? test.only : test
 
+  let hasBefore = false
+  let hasAfter = false
+  const beforeFn = (path, report, done) => {hasBefore = true; done()}
+  const afterFn = (path, report, done) => {hasAfter = true; done()}
+
   testFn(name, (test) => {
+    const method = opts.methods.create().method
+
+    opts.hooks = {}
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:before`] = beforeFn
+    opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:after`] = afterFn
+
     exports.setup(opts, (err, endpoints, services) => {
       
       exports.callCrud(test, opts, 'create', (err, created, context) => {
@@ -281,8 +350,11 @@ exports.testGetItem = (test, opts) => {
           test.equal(err, null, 'should not emit an error')
           
           const foundId = getDeepVal(results, opts.schema.id)
-
           test.equal(foundId, createdId, 'should retrieve an item with the same id we created')
+          
+          test.equal(hasBefore, true, 'should call before hook')
+          test.equal(hasAfter, true, 'should call after hook')
+
           exports.cleanup(test, services)
         })
       })
