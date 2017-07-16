@@ -42,7 +42,7 @@ SimDown launches a series of http servers that simulate AWS services. The servic
 
 SimDown has a simple CLI that runs simulations and manages API states. To learn more you can always run `simdown help`
 
-**Start simulaiton services***
+**Start simulaiton services**
 
 `simdown start`
 
