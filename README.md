@@ -38,7 +38,43 @@ SimDown launches a series of http servers that simulate AWS services. The servic
 
 ## Usage
 
-### Server
+### Command Line
+
+SimDown has a simple CLI that runs simulations and manages API states. To learn more you can always run `simdown help`
+
+**Start simulaiton services***
+
+`simdown start`
+
+This will startup all AWS simulators locally and print out their addresses eg:
+
+**Save current state**
+
+`simdown save [yourStateName]`
+
+SimDown will stash all API states into a compressed binary file for efficient storage. If no name is provided a timestamp will be used.
+
+**Load a saved state**
+
+`simdown load [yourStateName]`
+
+The current API state will be cleared and a previously saved state will be loaded.
+
+**List saved states**
+
+`simdown list`
+
+Displays a list of all archived states.
+
+**Remove a saved state**
+
+`simdown remove [yourStateName]`
+
+Deletes an archived state. Does not affect the current API state.
+
+### Programmatic
+
+#### Server
 
 Setup a SimDown server
 
@@ -59,7 +95,7 @@ Close down a running server
   })
 ```
 
-### Client
+#### Client
 
 To use SimDown, simply use the `endpoint` option of the AWS SDK (works from browser, node, python, Java, or any AWS SDK)
 
