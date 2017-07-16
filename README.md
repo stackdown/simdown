@@ -11,7 +11,7 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 - 100% node.js - no need for external dependencies
 - Performance - all services can be run in-process for better performance, debugging, and flexibility
 - Custom storage - optionally provide your own leveldb storage, or any other *-down store
-- Multi-API flows - test interaction across multiple APIs, eg. hook up an API gateway to a lambda, and trigger the lambda via http
+- Multi-API flows - test interaction across multiple APIs using multiple components
 
 #### Services
     
