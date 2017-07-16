@@ -72,7 +72,7 @@ Displays a list of all archived states.
 
 Deletes an archived state. Does not affect the current API state.
 
-### Programmatic
+### Programmatic Usage
 
 #### Server
 
