@@ -14,7 +14,7 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 
 #### Services
     
-- APIGateway (coming soon)
+- APIGateway (restApis only)
 - CognitoIdentity
 - CognitoIdentityServiceProvider
 - Kinesis (via [kinesalite](https://github.com/mhart/kinesalite))
