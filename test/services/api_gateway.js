@@ -63,7 +63,7 @@ const restAPITestOpts = utils.testCrud(test, {
 
 
 const deploymentTestOpts = utils.testCrud(test, {
-  // only: 'remove',
+  // only: 'create',
   methods: {
     get: (makeCall, id, context) => ({
       params: {
@@ -132,69 +132,83 @@ const deploymentTestOpts = utils.testCrud(test, {
   namespace: ['APIGateway', 'deployment']
 })
 
-// const stageTestOpts = utils.testCrud(test, {
-//   only: 'create',
-//   methods: {
-//     get: (makeCall, id) => ({
-//       params: {
-//         restApiId: id
-//       },
-//       method: ['APIGateway', 'getStage']
-//     }),
+const stageTestOpts = utils.testCrud(test, {
+  // only: 'remove',
+  methods: {
+    get: (makeCall, name, context) => ({
+      params: {
+        stageName: name,
+        restApiId: context.restApi,
+      },
+      method: ['APIGateway', 'getStage']
+    }),
     
-//     create: (makeCall, id) => ({
-//       method: ['APIGateway', 'createStage'],
-//       params: (test, callback) => {
-//         const callConfig = restAPITestOpts.methods.create(makeCall)
+    create: (makeCall) => ({
+      method: ['APIGateway', 'createStage'],
+      params: (test, callback) => {
+        const createApi = restAPITestOpts.methods.create(makeCall)
+        const createDeployment = deploymentTestOpts.methods.create(makeCall)
 
-//         makeCall(callConfig.method, callConfig.params, null, (err, apiResults) => {
-//           callback(err, {
-//             params: {
-//               stageName: 'test-stage',
-//               restApiId: apiResults ? apiResults.id : undefined,
-//             },
-//             context: (results) => ({pool: apiResults.id})
-//           })
-//         })
-//       }
-//     }),
+        utils.getFinalParams(test, createDeployment, (err, deployParams) => {
+          makeCall(createApi.method, createApi.params, null, (err, apiResults) => {
+            makeCall(deployParams.method, deployParams.params, null, (err, deploymentResults) => {
+              callback(err, {
+                params: {
+                  stageName: 'test-stage',
+                  restApiId: apiResults ? apiResults.id : undefined,
+                  description: 'original description',
+                  deploymentId: deploymentResults ? deploymentResults.id : undefined,
+                },
+                context: (results) => ({
+                  restApi: apiResults.id,
+                  deployment: deploymentResults.id
+                })
+              })
+            })
+          })
+        })
+      }
+    }),
 
-//     list: (makeCall, context) => ({
-//       params: {
-//         limit: 100
-//       },
-//       method: ['APIGateway', 'getStages']
-//     }),
+    list: (makeCall, context) => ({
+      params: {
+        restApiId: context.restApi,
+        deploymentId: context.deployment
+      },
+      method: ['APIGateway', 'getStages']
+    }),
 
-//     remove: (makeCall, id, context) => ({
-//       params: {
-//         restApiId: id
-//       },
-//       method: ['APIGateway', 'deleteStage']
-//     }),
+    remove: (makeCall, name, context) => ({
+      params: {
+        stageName: name,
+        restApiId: context.restApi
+      },
+      method: ['APIGateway', 'deleteStage']
+    }),
 
-//     update: (makeCall, id, context) => ({
-//       params: {
-//         restApiId: id,
-//         patchOperations: [
-//           {
-//             op: 'replace',
-//             path: 'name',
-//             value: 'changed-name'
-//           }
-//         ]
-//       },
-//       method: ['APIGateway', 'updateStage']
-//     }),
-    
-//   },
-//   listPath: 'items',
-//   updatePaths: [
-//     ['name']
-//   ],
-//   schema: {
-//     id: ['id'],
-//   },
-//   Services: [APIGatewayService],
-//   namespace: ['APIGateway', 'stage']
-// })
+    update: (makeCall, name, context) => ({
+      params: {
+        restApiId: context.restApi,
+        stageName: name,
+        patchOperations: [
+          {
+            op: 'replace',
+            path: 'description',
+            value: 'new description text'
+          }
+        ]
+      },
+      method: ['APIGateway', 'updateStage']
+    }),
+
+  },
+  listPath: 'item',
+  updatePaths: [
+    ['description']
+  ],
+  schema: {
+    id: ['stageName'],
+  },
+  Services: [APIGatewayService],
+  namespace: ['APIGateway', 'stage']
+})
