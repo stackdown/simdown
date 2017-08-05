@@ -14,12 +14,13 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 
 #### Services
     
-- APIGateway (restApis only)
+- APIGateway (restApis and deployments)
 - CognitoIdentity
 - CognitoIdentityServiceProvider
-- Kinesis (via [kinesalite](https://github.com/mhart/kinesalite))
-- DynamoDB (via [dynalite](https://github.com/mhart/dynalite))
+- Kinesis
+- DynamoDB
 - Lambda (coming soon)
+- S3 (coming soon)
 - IAM (roles only)
 - SQS (coming soon)
 - SNS (coming soon)
