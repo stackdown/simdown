@@ -36,24 +36,24 @@ exports.setup = (opts, callback) => {
         return callback(err)
       }
 
-      const makeCall = (method, params, context, callback) => {
+      const makeCall = (method, params, context, done) => {
         let [serviceName, functionName] = method
 
         const awsService = exports.getInstance(endpoints, serviceName)
         log(serviceName, functionName, 'endpoint', opts.endpoints)
         log(serviceName, functionName, 'params', JSON.stringify(params))
       
-        if (err) {return callback(err)}
+        if (err) {return done(err)}
 
         awsService[functionName](params, (err, results) => {
           log(serviceName, functionName, 'results', err, results)
 
           if (err) {
-            callback(err)
+            done(err)
           } else if (context) {
-            callback(null, results, context(results))
+            done(null, results, context(results))
           } else {
-            callback(null, results)
+            done(null, results)
           }
         })
       }
@@ -92,9 +92,14 @@ const getDeepVal = (obj, path) => {
   return retval
 }
 
-exports.crudMethod = (params, method) => {
-  return function() {
-
+exports.getFinalParams = (test, params, callback) => {
+  if (params.params.constructor === Function) {
+    params.params(test, (err, finalParams) => {
+      extend(true, params, finalParams)
+      exports.getFinalParams(test, params, callback)
+    })
+  } else {
+    callback(null, params)
   }
 }
 
@@ -107,19 +112,13 @@ exports.testCrud = (test, opts) => {
       const params = config(makeCall, ...args)
       const callback = arguments[arguments.length-1]
 
-      if (params.results) {
-        callback(null, params.results)
-      } else if (params.params.constructor === Function) {
-        params.params(test, (err, finalParams) => {
-          if (finalParams.results) {
-            callback(null, finalParams.results)
-          } else {
-            makeCall(params.method, finalParams.params, finalParams.context, callback)
-          }
-        })
-      } else {
-        makeCall(params.method, params.params, params.context, callback)
-      }
+      exports.getFinalParams(test, params, (err, finalParams) => {
+        if (finalParams.results) {
+          callback(null, finalParams.results)
+        } else {
+          makeCall(finalParams.method, finalParams.params, finalParams.context, callback)
+        }
+      })
     }
   })
 
@@ -298,22 +297,22 @@ exports.testRemoveItem = (test, opts) => {
         },
         
         (results, context, done) => {
-          const startPools = results[opts.listPath]
+          const startitems = results[opts.listPath]
           
-          test.equal(startPools.length, 1, 'should start with one pool')
+          test.equal(startitems.length, 1, 'should start with one pool')
 
-          const itemId = getDeepVal(startPools[0], opts.schema.id)
+          const itemId = getDeepVal(startitems[0], opts.schema.id)
 
           exports.callCrud(test, opts, 'remove', itemId, context, (err, results) => {
             exports.callCrud(test, opts, 'list', context, (err, results) => {
-              const endPools = results[opts.listPath]
-              done(err, startPools, endPools)
+              const endItems = results[opts.listPath]
+              done(err, startitems, endItems)
             })
           })
         },
 
-      ], (err, startPools, endPools) => {
-        test.equal(endPools.length, 0, 'should end with no pools')
+      ], (err, startitems, endItems) => {
+        test.equal(endItems.length, 0, 'should end with no items')
         
         test.equal(hasBefore, true, 'should call before hook')
         test.equal(hasAfter, true, 'should call after hook')
