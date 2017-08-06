@@ -246,8 +246,10 @@ exports.testListItems = (test, opts) => {
       exports.callCrud(test, opts, 'create', (err, created, context) => {
         exports.callCrud(test, opts, 'list', context, (err, results) => {
           test.equal(err, null, 'should not emit an error')
+
+          const totalItems = opts.baseCount === undefined ? 1 : opts.baseCount + 1
           
-          test.equal(results[opts.listPath].length, 1, 'should have one identity pool')
+          test.equal(results[opts.listPath].length, totalItems, 'should have the right number of items')
           
           for (var pool of results[opts.listPath]) {
             const poolId = getDeepVal(pool, opts.schema.id)
@@ -298,8 +300,9 @@ exports.testRemoveItem = (test, opts) => {
         
         (results, context, done) => {
           const startitems = results[opts.listPath]
-          
-          test.equal(startitems.length, 1, 'should start with one pool')
+          const totalItems = opts.baseCount === undefined ? 1 : opts.baseCount + 1
+
+          test.equal(startitems.length, totalItems, 'should start with the right number of items')
 
           const itemId = getDeepVal(startitems[0], opts.schema.id)
 
@@ -312,7 +315,7 @@ exports.testRemoveItem = (test, opts) => {
         },
 
       ], (err, startitems, endItems) => {
-        test.equal(endItems.length, 0, 'should end with no items')
+        test.equal(endItems.length, opts.baseCount || 0, 'should end with no extra items')
         
         test.equal(hasBefore, true, 'should call before hook')
         test.equal(hasAfter, true, 'should call after hook')
