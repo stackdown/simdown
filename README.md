@@ -14,7 +14,7 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 
 #### Services
     
-- APIGateway (restApis, deployments, and stages)
+- APIGateway (still under construction)
 - CognitoIdentity
 - CognitoIdentityServiceProvider
 - Kinesis
@@ -22,8 +22,6 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 - Lambda (coming soon)
 - S3 (coming soon)
 - IAM (roles only)
-- SQS (coming soon)
-- SNS (coming soon)
 
 ## Why SimDown?
 
