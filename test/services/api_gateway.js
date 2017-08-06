@@ -212,3 +212,93 @@ const stageTestOpts = utils.testCrud(test, {
   Services: [APIGatewayService],
   namespace: ['APIGateway', 'stage']
 })
+
+const resourceTestOpts = utils.testCrud(test, {
+  // only: 'remove',
+  methods: {
+    get: (makeCall, id, context) => ({
+      params: {
+        restApiId: context.restApi,
+        resourceId: id
+      },
+      method: ['APIGateway', 'getResource']
+    }),
+
+    create: (makeCall, id) => ({
+      method: ['APIGateway', 'createResource'],
+      params: (test, callback) => {
+        const callConfig = restAPITestOpts.methods.create(makeCall)
+
+        // Create a restApi (should automatically create a root resource)
+        makeCall(callConfig.method, callConfig.params, null, (err, apiResults) => {
+          const getResourcesParams = {
+            restApiId: apiResults ? apiResults.id : undefined
+          }
+
+          // Fetch the api's resources to get the ID of the root
+          makeCall(['APIGateway', 'getResources'], getResourcesParams, null, (err, resourceResults) => {
+
+            if (!apiResults || resourceResults.items.length === 0) {
+              test.equal(true, false, 'should automatically creat a root resource with rest APIs')
+            } else { 
+              test.equal(true, true, 'should automatically creat a root resource with rest APIs')
+            }
+
+            const rootResource = resourceResults.items[0].id
+
+            callback(err, {
+              params: {
+                pathPart: 'testpath',
+                parentId: rootResource,
+                restApiId: apiResults ? apiResults.id : undefined
+              },
+              context: (results) => ({restApi: apiResults.id})
+            })
+          })
+        })
+      }
+    }),
+
+    list: (makeCall, context) => ({
+      params: {
+        limit: 100,
+        restApiId: context.restApi
+      },
+      method: ['APIGateway', 'getResources']
+    }),
+
+    remove: (makeCall, id, context) => ({
+      params: {
+        restApiId: context.restApi,
+        resourceId: id
+      },
+      method: ['APIGateway', 'deleteResource']
+    }),
+
+    update: (makeCall, id, context) => ({
+      params: {
+        restApiId: context.restApi,
+        resourceId: id,
+        patchOperations: [
+          {
+            op: 'replace',
+            path: 'resourceMethods/ANY',
+            value: '{}'
+          }
+        ]
+      },
+      method: ['APIGateway', 'updateResource']
+    }),
+    
+  },
+  listPath: 'items',
+  updatePaths: [
+    ['resourceMethods', 'ANY']
+  ],
+  schema: {
+    id: ['id'],
+  },
+  baseCount: 1,
+  Services: [APIGatewayService],
+  namespace: ['APIGateway', 'resource']
+})
