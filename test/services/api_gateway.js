@@ -61,7 +61,6 @@ const restAPITestOpts = utils.testCrud(test, {
   namespace: ['APIGateway', 'restApi']
 })
 
-
 const deploymentTestOpts = utils.testCrud(test, {
   // only: 'create',
   methods: {
@@ -301,4 +300,86 @@ const resourceTestOpts = utils.testCrud(test, {
   baseCount: 1,
   Services: [APIGatewayService],
   namespace: ['APIGateway', 'resource']
+})
+
+const methodTestOpts = utils.testCrud(test, {
+  only: 'update',
+  methods: {
+    get: (makeCall, id, context) => ({
+      params: {
+        restApiId: context.restApiId,
+        resourceId: context.resourceId,
+        httpMethod: 'ANY',
+      },
+      method: ['APIGateway', 'getMethod']
+    }),
+
+    create: (makeCall, id) => ({
+      method: ['APIGateway', 'putMethod'],
+      params: (test, callback) => {
+        const callConfig = restAPITestOpts.methods.create(makeCall)
+
+        // Create a restApi (should automatically create a root resource)
+        makeCall(callConfig.method, callConfig.params, null, (err, apiResults) => {
+          const getResourcesParams = {
+            restApiId: apiResults ? apiResults.id : undefined
+          }
+
+          // Fetch the api's resources to get the ID of the root
+          makeCall(['APIGateway', 'getResources'], getResourcesParams, null, (err, resourceResults) => {
+
+            const rootResource = resourceResults.items[0].id
+
+            callback(err, {
+              params: {
+                restApiId: apiResults ? apiResults.id : undefined,
+                httpMethod: 'ANY',
+                resourceId: rootResource,
+                authorizationType: 'NONE'
+              },
+              context: (results) => ({
+                restApiId: apiResults.id,
+                resourceId: rootResource
+              })
+            })
+          })
+        })
+      }
+    }),
+
+    remove: (makeCall, id, context) => ({
+      params: {
+        httpMethod: 'ANY',
+        restApiId: context.restApi,
+        resourceId: context.resourceId
+      },
+      method: ['APIGateway', 'deleteMethod']
+    }),
+
+    update: (makeCall, id, context) => ({
+      params: {
+        httpMethod: 'ANY',
+        restApiId: context.restApiId,
+        resourceId: context.resourceId,
+        patchOperations: [
+          {
+            op: 'replace',
+            path: 'authorizationType',
+            value: 'COGNITO_USER_POOLS'
+          }
+        ]
+      },
+      method: ['APIGateway', 'updateMethod']
+    }),
+
+  },
+  listPath: 'items',
+  updatePaths: [
+    ['authorizationType']
+  ],
+  schema: {
+    id: ['httpMethod'],
+  },
+  Services: [APIGatewayService],
+  namespace: ['APIGateway', 'deployment']
 })
