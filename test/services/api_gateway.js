@@ -383,3 +383,93 @@ const methodTestOpts = utils.testCrud(test, {
   Services: [APIGatewayService],
   namespace: ['APIGateway', 'deployment']
 })
+
+const integrationTestOpts = utils.testCrud(test, {
+  // only: 'update',
+  methods: {
+    get: (makeCall, id, context) => ({
+      params: {
+        restApiId: context.restApiId,
+        resourceId: context.resourceId,
+        httpMethod: 'ANY',
+      },
+      method: ['APIGateway', 'getIntegration']
+    }),
+
+    create: (makeCall, id) => ({
+      method: ['APIGateway', 'putIntegration'],
+      params: (test, callback) => {
+        const callConfig = restAPITestOpts.methods.create(makeCall)
+
+        // Create a restApi (should automatically create a root resource)
+        makeCall(callConfig.method, callConfig.params, null, (err, apiResults) => {
+          const getResourcesParams = {
+            restApiId: apiResults ? apiResults.id : undefined
+          }
+
+          // Fetch the api's resources to get the ID of the root
+          makeCall(['APIGateway', 'getResources'], getResourcesParams, null, (err, resourceResults) => {
+
+            const rootResource = resourceResults.items[0].id
+            const methodParams = {
+              restApiId: apiResults ? apiResults.id : undefined,
+              httpMethod: 'ANY',
+              resourceId: rootResource,
+              authorizationType: 'NONE'
+            }
+
+            makeCall(['APIGateway', 'putMethod'], methodParams, null, (err, resourceResults) => {
+              callback(err, {
+                params: {
+                  type: 'HTTP_PROXY',
+                  restApiId: apiResults ? apiResults.id : undefined,
+                  httpMethod: 'ANY',
+                  resourceId: rootResource,
+                },
+                context: (results) => ({
+                  restApiId: apiResults.id,
+                  resourceId: rootResource
+                })
+              })
+            })
+          })
+        })
+      }
+    }),
+
+    remove: (makeCall, id, context) => ({
+      params: {
+        httpMethod: 'ANY',
+        restApiId: context.restApi,
+        resourceId: context.resourceId
+      },
+      method: ['APIGateway', 'deleteIntegration']
+    }),
+
+    update: (makeCall, id, context) => ({
+      params: {
+        httpMethod: 'ANY',
+        restApiId: context.restApiId,
+        resourceId: context.resourceId,
+        patchOperations: [
+          {
+            op: 'replace',
+            path: 'contentHandling',
+            value: 'CONVERT_TO_BINARY'
+          }
+        ]
+      },
+      method: ['APIGateway', 'updateIntegration']
+    }),
+
+  },
+  listPath: 'items',
+  updatePaths: [
+    ['contentHandling']
+  ],
+  schema: {
+    id: ['type'],
+  },
+  Services: [APIGatewayService],
+  namespace: ['APIGateway', 'deployment']
+})
