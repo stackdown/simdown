@@ -303,7 +303,7 @@ const resourceTestOpts = utils.testCrud(test, {
 })
 
 const methodTestOpts = utils.testCrud(test, {
-  only: 'update',
+  // only: 'update',
   methods: {
     get: (makeCall, id, context) => ({
       params: {
