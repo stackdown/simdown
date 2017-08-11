@@ -42,8 +42,12 @@ exports.setup = (opts, callback) => {
         const awsService = exports.getInstance(endpoints, serviceName)
         log(serviceName, functionName, 'endpoint', opts.endpoints)
         log(serviceName, functionName, 'params', JSON.stringify(params))
-      
+
         if (err) {return done(err)}
+
+        if (awsService[functionName] === undefined) {
+          return done(`${serviceName} has no method ${functionName}`)
+        }
 
         awsService[functionName](params, (err, results) => {
           log(serviceName, functionName, 'results', err, results)
