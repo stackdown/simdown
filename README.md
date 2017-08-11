@@ -25,11 +25,13 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 
 ## Why SimDown?
 
-Testing applciations that work with AWS API's can be difficult because there's no way to simulate them locally. Existing solutions like [localstack](https://github.com/localstack/localstack) are awesome (!) but they have a few important shortcomings:
+Testing applciations that work with AWS API's can be difficult because there's no way to simulate them locally. Existing solutions like [localstack](https://github.com/localstack/localstack), [s3rver](https://github.com/jamhall/s3rver), and many others are awesome (!) but they have a few important shortcomings:
 
 - No ability to save/restore API state
 - No hooks before/after method calls
 - Missing important services
+- Services missing important features
+- Inconsistent implementation and testing
 - Multiple languages and binary dependencies
 
 SimDown launches a series of http servers that simulate AWS services. The services can interact with each other to properly simulate Amazon's real system. In the background SimDown keeps track of AWS state using leveldb, which allows a lot of flexible storage options.
