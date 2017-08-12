@@ -381,7 +381,7 @@ const methodTestOpts = utils.testCrud(test, {
     id: ['httpMethod'],
   },
   Services: [APIGatewayService],
-  namespace: ['APIGateway', 'deployment']
+  namespace: ['APIGateway', 'method']
 })
 
 const integrationTestOpts = utils.testCrud(test, {
@@ -471,5 +471,98 @@ const integrationTestOpts = utils.testCrud(test, {
     id: ['type'],
   },
   Services: [APIGatewayService],
-  namespace: ['APIGateway', 'deployment']
+  namespace: ['APIGateway', 'integration']
+})
+
+const methodResponseTests = utils.testCrud(test, {
+  // only: 'update',
+  methods: {
+    get: (makeCall, id, context) => ({
+      params: {
+        restApiId: context.restApiId,
+        resourceId: context.resourceId,
+        statusCode: '200',
+        httpMethod: 'ANY',
+      },
+      method: ['APIGateway', 'getMethodResponse']
+    }),
+
+    create: (makeCall, id) => ({
+      method: ['APIGateway', 'putMethodResponse'],
+      params: (test, callback) => {
+        const callConfig = restAPITestOpts.methods.create(makeCall)
+
+        // Create a restApi (should automatically create a root resource)
+        makeCall(callConfig.method, callConfig.params, null, (err, apiResults) => {
+          const getResourcesParams = {
+            restApiId: apiResults ? apiResults.id : undefined
+          }
+
+          // Fetch the api's resources to get the ID of the root
+          makeCall(['APIGateway', 'getResources'], getResourcesParams, null, (err, resourceResults) => {
+
+            const rootResource = resourceResults.items[0].id
+            const methodParams = {
+              restApiId: apiResults ? apiResults.id : undefined,
+              httpMethod: 'ANY',
+              resourceId: rootResource,
+              authorizationType: 'NONE'
+            }
+
+            makeCall(['APIGateway', 'putMethod'], methodParams, null, (err, resourceResults) => {
+              callback(err, {
+                params: {
+                  restApiId: apiResults ? apiResults.id : undefined,
+                  httpMethod: 'ANY',
+                  statusCode: '200',
+                  resourceId: rootResource,
+                },
+                context: (results) => ({
+                  restApiId: apiResults.id,
+                  resourceId: rootResource
+                })
+              })
+            })
+          })
+        })
+      }
+    }),
+
+    remove: (makeCall, id, context) => ({
+      params: {
+        restApiId: context.restApi,
+        httpMethod: 'ANY',
+        statusCode: '200',
+        resourceId: context.resourceId
+      },
+      method: ['APIGateway', 'deleteMethodResponse']
+    }),
+
+    update: (makeCall, id, context) => ({
+      params: {
+        restApiId: context.restApiId,
+        httpMethod: 'ANY',
+        statusCode: '200',
+        resourceId: context.resourceId,
+        patchOperations: [
+          {
+            op: 'replace',
+            path: 'responseParameters/method.response.header.Location',
+            value: 'true'
+          }
+        ]
+      },
+      method: ['APIGateway', 'updateMethodResponse']
+    }),
+
+  },
+  listPath: 'items',
+  updatePaths: [
+    ['responseParameters', 'method.response.header.Location'],
+  ],
+  schema: {
+    id: ['statusCode'],
+  },
+  Services: [APIGatewayService],
+  namespace: ['APIGateway', 'methodResponse']
 })
