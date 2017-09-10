@@ -175,7 +175,8 @@ exports.testCreateItem = (test, opts) => {
       exports.callCrud(test, opts, 'create', (err, created) => {
         test.equal(err, null, 'should not emit an error')
         
-        const resourceId = getDeepVal(created, opts.schema.id)
+        const schemaId = exports.getId(opts, 'create')
+        const resourceId = getDeepVal(created, schemaId)
         test.notEqual(resourceId, undefined, 'should generate an id')
         
         test.equal(hasBefore, true, 'should call before hook')
@@ -206,7 +207,8 @@ exports.testUpdateItem = (test, opts) => {
 
     exports.setup(opts, (err, endpoints, services) => {
       exports.callCrud(test, opts, 'create', (err, created, context) => {
-        const resourceId = getDeepVal(created, opts.schema.id)
+        const schemaId = exports.getId(opts, 'update')
+        const resourceId = getDeepVal(created, schemaId)
         
         exports.callCrud(test, opts, 'update', resourceId, context, (err, updated) => {
           exports.callCrud(test, opts, 'get', resourceId, context, (err, found) => {
@@ -255,8 +257,9 @@ exports.testListItems = (test, opts) => {
           
           test.equal(results[opts.listPath].length, totalItems, 'should have the right number of items')
           
+          const schemaId = exports.getId(opts, 'list')
           for (var pool of results[opts.listPath]) {
-            const poolId = getDeepVal(pool, opts.schema.id)
+            const poolId = getDeepVal(pool, schemaId)
 
             test.notEqual(poolId, undefined, 'should retrieve pool ids')
           }
@@ -308,7 +311,8 @@ exports.testRemoveItem = (test, opts) => {
 
           test.equal(startitems.length, totalItems, 'should start with the right number of items')
 
-          const itemId = getDeepVal(startitems[0], opts.schema.id)
+          const schemaId = exports.getId(opts, 'remove')
+          const itemId = getDeepVal(startitems[0], schemaId)
 
           exports.callCrud(test, opts, 'remove', itemId, context, (err, results) => {
             exports.callCrud(test, opts, 'list', context, (err, results) => {
@@ -348,14 +352,15 @@ exports.testGetItem = (test, opts) => {
     opts.hooks[`${method[0]}:${method[1].charAt(0).toUpperCase() + method[1].slice(1)}:after`] = afterFn
 
     exports.setup(opts, (err, endpoints, services) => {
-      
+      const schemaId = exports.getId(opts, 'get')
+
       exports.callCrud(test, opts, 'create', (err, created, context) => {
-        const createdId = getDeepVal(created, opts.schema.id)
+        const createdId = getDeepVal(created, schemaId)
         
         exports.callCrud(test, opts, 'get', createdId, context, (err, results) => {
           test.equal(err, null, 'should not emit an error')
           
-          const foundId = getDeepVal(results, opts.schema.id)
+          const foundId = getDeepVal(results, schemaId)
           test.equal(foundId, createdId, 'should retrieve an item with the same id we created')
           
           test.equal(hasBefore, true, 'should call before hook')
@@ -366,4 +371,12 @@ exports.testGetItem = (test, opts) => {
       })
     })
   })
+}
+
+exports.getId = (opts, testType) => {
+  if (opts.schema.constructor === Function) {
+    return opts.schema(testType).id
+  } else {
+    return opts.schema.id
+  }
 }
