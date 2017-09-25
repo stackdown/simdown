@@ -14,12 +14,12 @@ Faithful simulation of AWS Cloud Services using node.js and leveldb, useful for 
 
 #### Services
     
-- APIGateway (still under construction)
+- APIGateway
 - CognitoIdentity
 - CognitoIdentityServiceProvider
 - Kinesis
 - DynamoDB
-- Lambda (coming soon)
+- Lambda
 - S3 (coming soon)
 - IAM (roles only)
 
